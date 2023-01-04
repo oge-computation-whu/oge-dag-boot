@@ -28,7 +28,13 @@ public class JsonReceiverController {
     private JedisPool jedisPool;
 
     @PostMapping("/saveDagJson")
-    public void saveDagJson(@RequestBody String dagString) throws InterruptedException {
+    public void saveDagJson(@RequestBody String params) throws InterruptedException {
+        JSONObject paramsObject = JSONObject.parseObject(params);
+        String dagString = paramsObject.getString("dag");
+        String spaceParam = "None";
+        if(paramsObject.containsKey("spaceParams")){
+            spaceParam = paramsObject.getJSONObject("spaceParams").toJSONString();
+        }
         try{
             Jedis jedis = jedisPool.getResource();
             jedis.set("ogeDag", dagString);
@@ -36,7 +42,7 @@ public class JsonReceiverController {
             jedis.expire("ogeDag", 300);
             System.out.println(jedis.get("ogeDag"));
             jedis.close();
-            webSocket.sendStatusOfSaveDag("Success");
+            webSocket.sendStatusOfSaveDag(spaceParam);
         }catch (Exception e){
             webSocket.sendStatusOfSaveDag("Fail");
         }
