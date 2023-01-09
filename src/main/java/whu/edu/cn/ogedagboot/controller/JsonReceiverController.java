@@ -5,12 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import scala.annotation.meta.param;
 import whu.edu.cn.ogedagboot.bean.WebSocket;
 
 import java.io.*;
 import java.util.ArrayList;
 
+import static whu.edu.cn.ogedagboot.util.LivyUtil.livyTrigger;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.runCmd;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.versouSshUtil;
 import static whu.edu.cn.ogedagboot.util.SparkLauncherUtil.sparkSubmitTrigger;
@@ -66,7 +66,7 @@ public class JsonReceiverController {
             ogeDagJson.put("oorB", "0");
             String paramStr = ogeDagJson.toJSONString();
             jedis.close();
-            return sparkSubmitTrigger(paramStr);
+            return livyTrigger(paramStr);
         } else {
             jedis.close();
             return "Error";

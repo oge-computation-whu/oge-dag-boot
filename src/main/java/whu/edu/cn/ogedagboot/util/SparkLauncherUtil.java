@@ -93,7 +93,7 @@ public class SparkLauncherUtil {
                     "cd /home/geocube/oge" + "\n" + "rm -rf on-the-fly" + "\n" + "mkdir on-the-fly" + "\n" +
                     "cd /home/geocube/oge/oge-server/dag-boot" + "\n" + "rm -rf webapi" + "\n" + "mkdir webapi" + "\n" +
                     "cd /home/geocube/tomcat8/apache-tomcat-8.5.57/webapps/" + "\n" + "rm -rf webapi" + "\n" + "mkdir webapi" + "\n" +
-                    "/home/geocube/spark/bin/spark-submit --master local[2] --class whu.edu.cn.application.oge.Trigger --driver-memory 30G --executor-memory 10G --conf spark.driver.maxResultSize=4G /home/geocube/oge/oge-server/dag-boot/oge-computation_ogc_on_the_fly.jar " + fileNameJson + " " + fileName + "\n";
+                    "/home/geocube/spark/bin/spark-submit --master local[8] --class whu.edu.cn.application.oge.Trigger --driver-memory 30G --executor-memory 10G --conf spark.driver.maxResultSize=4G /home/geocube/oge/oge-server/dag-boot/oge-computation_ogc_on_the_fly.jar " + fileNameJson + " " + fileName + "\n";
             System.out.println("st = " + st);
             runCmd(st, "UTF-8");
         } catch (Exception e) {
