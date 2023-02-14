@@ -16,8 +16,11 @@ public class LivyUtil {
 
     }
     public static String livyTrigger(String param) {
+        String host = "125.220.153.26";
+        String port = "19101";
+        String baseUrl = "http://" + host + ":" + port;
         try {
-            versouSshUtil("125.220.153.26", "geocube", "ypfamily608", 22);
+            versouSshUtil(host, "geocube", "ypfamily608", 22);
             String st =
                     "cd /home/geocube/oge" + "\n" + "rm -rf on-the-fly" + "\n" + "mkdir on-the-fly" + "\n" +
                     "cd /home/geocube/oge/oge-server/dag-boot" + "\n" + "rm -rf webapi" + "\n" + "mkdir webapi" + "\n" +
@@ -44,7 +47,7 @@ public class LivyUtil {
 
         int sessionId = -1;
         for(int i = 0; i < sessionNum; i++){
-            String sessionInfoString = sendGet("http://125.220.153.26:8998/sessions/" + i);
+            String sessionInfoString = sendGet(baseUrl + "/sessions/" + i);
             JSONObject sessionInfoJson = JSON.parseObject(sessionInfoString);
             if(Objects.equals(sessionInfoJson.getString("state"), "idle")){
                 sessionId = i;
@@ -52,10 +55,10 @@ public class LivyUtil {
             }
         }
         if(sessionId == -1){
-            String statementsInfoString = sendGet("http://125.220.153.26:8998/sessions/0/statements");
+            String statementsInfoString = sendGet(baseUrl + "/sessions/0/statements");
             JSONObject statementsInfoJson = JSON.parseObject(statementsInfoString);
             int totalStatements = statementsInfoJson.getInteger("total_statements");
-            String cancelInfoString = sendPost("http://125.220.153.26:8998/sessions/0/statements/" + (totalStatements - 1),"");
+            String cancelInfoString = sendPost(baseUrl + "/sessions/0/statements/" + (totalStatements - 1),"");
             JSONObject cancelInfoJson = JSON.parseObject(cancelInfoString);
             String cancelBool = cancelInfoJson.getString("msg");
             if(Objects.equals(cancelBool, "canceled")){
@@ -69,12 +72,12 @@ public class LivyUtil {
         body.put("code", code);
         body.put("kind", "spark");
         String parameter = body.toJSONString();
-        String outputString = sendPost("http://125.220.153.26:8998/sessions/" + sessionId + "/statements", parameter);
+        String outputString = sendPost(baseUrl + "/sessions/" + sessionId + "/statements", parameter);
         System.out.println("outputString = " + outputString);
         JSONObject jsonObject = JSON.parseObject(outputString);
         int statementId = jsonObject.getInteger("id");
         while(true) {
-            String statementInfoString = sendGet("http://125.220.153.26:8998/sessions/" + sessionId + "/statements/" + statementId);
+            String statementInfoString = sendGet(baseUrl + "/sessions/" + sessionId + "/statements/" + statementId);
             JSONObject statementInfoJson = JSON.parseObject(statementInfoString);
             String state = statementInfoJson.getString("state");
             if(Objects.equals(state, "available")){
