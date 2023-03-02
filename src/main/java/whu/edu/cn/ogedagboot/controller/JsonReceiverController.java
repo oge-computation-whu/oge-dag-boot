@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import whu.edu.cn.ogedagboot.bean.WebSocket;
+import whu.edu.cn.ogedagboot.util.LivyUtil;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -46,6 +47,11 @@ public class JsonReceiverController {
         }catch (Exception e){
             webSocket.sendStatusOfSaveDag("Fail");
         }
+    }
+
+    @PostMapping("/initLivy")
+    public void initLivy() {
+        LivyUtil.initLivy();
     }
 
     @PostMapping("/runDagJson")
