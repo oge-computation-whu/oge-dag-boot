@@ -6,11 +6,11 @@ import com.alibaba.fastjson.JSONObject;
 import scala.annotation.meta.param;
 
 import java.io.*;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import static whu.edu.cn.ogedagboot.util.HttpRequestUtil.sendGet;
-import static whu.edu.cn.ogedagboot.util.HttpRequestUtil.sendPost;
+import static whu.edu.cn.ogedagboot.util.HttpRequestUtil.*;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.runCmd;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.versouSshUtil;
 
@@ -19,18 +19,24 @@ public class LivyUtil {
         String host = "125.220.153.26";
         String port = "19101";
         String baseUrl = "http://" + host + ":" + port;
-        String sessionInfoString = sendGet(baseUrl + "/sessions/");
-        JSONObject body = JSON.parseObject(sessionInfoString);
-        JSONArray jsonArray = body.getJSONArray("sessions");
-        JSONObject a = jsonArray.getJSONObject(0);
-        System.out.println("a = " + a);
+        System.out.println(sendDelete(baseUrl + "/sessions/" + 3));
+    }
+
+    public static boolean isPortInUse(String host, int port) {
+        try (Socket socket = new Socket(host, port)) {
+            //如果端口没有被占用，则Socket连接会被立即关闭，返回true
+            return true;
+        } catch (Exception e) {
+            //如果端口被占用，则Socket连接会抛出异常，返回false
+            return false;
+        }
     }
 
     public static void initLivy() {
         String host = "125.220.153.26";
         String port = "19101";
         String baseUrl = "http://" + host + ":" + port;
-        int sessionNum = 6;
+        int sessionNum = 5;
         try {
             versouSshUtil(host, "geocube", "ypfamily608", 22);
             String st =
@@ -40,6 +46,18 @@ public class LivyUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        while (true) {
+            if (isPortInUse(host, Integer.parseInt(port))) {
+                break;
+            }
+        }
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         for (int i = 0; i < sessionNum; i++) {
             JSONObject body = new JSONObject();
             body.put("name", "spark" + i);
@@ -54,6 +72,11 @@ public class LivyUtil {
             body.put("conf", bodyChildren);
             String param = body.toJSONString();
             sendPost(baseUrl + "/sessions", param);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -61,7 +84,7 @@ public class LivyUtil {
         String host = "125.220.153.26";
         String port = "19101";
         String baseUrl = "http://" + host + ":" + port;
-        int sessionNumExpected = 6;
+        int sessionNumExpected = 5;
         try {
             versouSshUtil(host, "geocube", "ypfamily608", 22);
             String st =
@@ -125,6 +148,9 @@ public class LivyUtil {
             if (Objects.equals(sessionInfoJson.getString("state"), "idle")) {
                 sessionIdAvailable = sessionIdList.get(i);
                 break;
+            }
+            else if(Objects.equals(sessionInfoJson.getString("state"), "idle")){
+                sendDelete(baseUrl + "/sessions/" + sessionIdList.get(i));
             }
         }
 
