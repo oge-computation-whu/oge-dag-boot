@@ -15,8 +15,67 @@
     <description>oge-dag-boot</description>
     <properties>
         <java.version>1.8</java.version>
+        <scala.version>2.11.12</scala.version>
+        <scala.compat.version>2.11</scala.compat.version>
+        <geotrellis.version>3.0.0</geotrellis.version>
     </properties>
     <dependencies>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.locationtech.geotrellis</groupId>
+            <artifactId>geotrellis-layer_${scala.compat.version}</artifactId>
+            <version>${geotrellis.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.locationtech.geotrellis</groupId>
+            <artifactId>geotrellis-spark_${scala.compat.version}</artifactId>
+            <version>${geotrellis.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.locationtech.geotrellis</groupId>
+            <artifactId>geotrellis-raster_${scala.compat.version}</artifactId>
+            <version>${geotrellis.version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.locationtech.geotrellis</groupId>
+            <artifactId>geotrellis-store_${scala.compat.version}</artifactId>
+            <version>${geotrellis.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.locationtech.geotrellis</groupId>
+            <artifactId>geotrellis-proj4_${scala.compat.version}</artifactId>
+            <version>${geotrellis.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.locationtech.geotrellis</groupId>
+            <artifactId>geotrellis-util_${scala.compat.version}</artifactId>
+            <version>${geotrellis.version}</version>
+        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>org.locationtech.geotrellis</groupId>-->
+<!--            <artifactId>geotrellis-spark-etl_${scala.compat.version}</artifactId>-->
+<!--            <version>2.0.1</version>-->
+<!--        </dependency>-->
+
+
+
+
+
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
