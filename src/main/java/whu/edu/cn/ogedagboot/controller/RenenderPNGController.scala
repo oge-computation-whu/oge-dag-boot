@@ -109,6 +109,7 @@ class RenenderPNGController {
             }
           }
           else {
+            throw new Exception("参数异常")
             colorRamp
             // TODO 输入错误，返回预定义值，抛出异常
           }
@@ -123,6 +124,7 @@ class RenenderPNGController {
           }
         }
         else {
+          throw new Exception("参数异常")
           colorRamp
           // TODO 输入错误，返回预定义值，抛出异常
         }
