@@ -9,6 +9,7 @@ class OgeDagBootApplicationTests {
 
     @Test
     void contextLoads() {
+
     }
 
 }
