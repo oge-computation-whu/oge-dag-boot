@@ -61,7 +61,6 @@ class RenenderPNGController {
     val max = renderArray(2).toInt
 
 
-
     val outputPath = "/home/geocube/oge/on-the-fly"
     val catalogPath = new java.io.File(outputPath).toURI
     // TODO 创建存储区
