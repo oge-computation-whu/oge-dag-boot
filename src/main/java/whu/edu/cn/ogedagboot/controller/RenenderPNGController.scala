@@ -38,8 +38,8 @@ class RenenderPNGController {
 
 
     println("zoom: "+zoom)
-
-    // TODO 色带,预设值：HeatmapBlueToYellowToRedSpectrum
+    // TODO
+    //  色带,预设值：HeatmapBlueToYellowToRedSpectrum
     var colorRamp = ColorRamps.HeatmapBlueToYellowToRedSpectrum
     // TODO 以下参数为前端传入
     val systemColorRamp = "HeatmapBlueToYellowToRedSpectrum" // TODO 系统色带类型
