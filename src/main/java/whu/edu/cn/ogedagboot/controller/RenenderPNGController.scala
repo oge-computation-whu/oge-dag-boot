@@ -36,10 +36,13 @@ class RenenderPNGController {
   @ResponseBody
   def renderBean(@PathVariable layerId: String, @PathVariable zoom: Int, @PathVariable x: Int, @PathVariable y: Int): Array[Byte] = {
 
+
+    println("zoom: "+zoom)
+
     // TODO 色带,预设值：HeatmapBlueToYellowToRedSpectrum
     var colorRamp = ColorRamps.HeatmapBlueToYellowToRedSpectrum
     // TODO 以下参数为前端传入
-    val systemColorRamp = "null" // TODO 系统色带类型
+    val systemColorRamp = "HeatmapBlueToYellowToRedSpectrum" // TODO 系统色带类型
     val thresholdValue = 100 // TODO 灰度分割阈值，为系统色带中 Greyscale 的传入参数
     val colorType = 0 // TODO 表示传入的颜色值的表达方式——0:RGBA , 1: 0x16进制
     val rgbaValues: List[Array[Int]] = List(Array(255, 0, 0, 255), Array(0, 255, 0, 255)) // TODO 用于存储RGBA型色带颜色值
