@@ -54,7 +54,6 @@ class RenenderPNGController {
     var colorMap: ColorMap = colorRamp.toColorMap(colorQuantile)
     var png: Png = null
 
-
     val renderArray = layerId.split("_")(1).split("-")
     val palette = renderArray(0)
     val min = renderArray(1).toInt
