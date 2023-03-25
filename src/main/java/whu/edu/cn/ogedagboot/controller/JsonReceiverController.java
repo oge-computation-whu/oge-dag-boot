@@ -6,22 +6,27 @@ import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import whu.edu.cn.ogedagboot.bean.WebSocket;
+import whu.edu.cn.ogedagboot.util.BuildStrUtil;
 import whu.edu.cn.ogedagboot.util.LivyUtil;
 
+import javax.servlet.http.HttpSession;
 import java.io.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static whu.edu.cn.ogedagboot.util.LivyUtil.livyTrigger;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.runCmd;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.versouSshUtil;
 import static whu.edu.cn.ogedagboot.util.SparkLauncherUtil.sparkSubmitTrigger;
 import static whu.edu.cn.ogedagboot.util.SparkLauncherUtil.sparkSubmitTriggerBatch;
+import static whu.edu.cn.ogedagboot.util.SystemConstants.OGE_DAG_PREFIX;
 
 @RestController
-@CrossOrigin(origins = "*",maxAge = 3600)
+@CrossOrigin(origins = "*", maxAge = 3600)
 
 public class JsonReceiverController {
+
 
     @Autowired
     private WebSocket webSocket;
@@ -30,22 +35,33 @@ public class JsonReceiverController {
     private JedisPool jedisPool;
 
     @PostMapping("/saveDagJson")
-    public void saveDagJson(@RequestBody String params) throws InterruptedException {
+    public void saveDagJson(@RequestBody String params, HttpSession httpSession) throws InterruptedException {
+
+
+
         JSONObject paramsObject = JSONObject.parseObject(params);
-        String dagString = paramsObject.getString("dag");
+        // 取出dag的
+        String ogeDagJson = paramsObject.getString("dag");
+
+        // 写入session
+        httpSession.setAttribute("OGE_DAG_JSON", ogeDagJson);
+
+        // 看下是不是
+        System.out.println(ogeDagJson);
+
         String spaceParam = "None";
-        if(paramsObject.containsKey("spaceParams")){
+        if (paramsObject.containsKey("spaceParams")) {
             spaceParam = paramsObject.getJSONObject("spaceParams").toJSONString();
         }
-        try{
-            Jedis jedis = jedisPool.getResource();
-            jedis.set("ogeDag", dagString);
-            // 设置为5分钟
-            jedis.expire("ogeDag", 300);
-            System.out.println(jedis.get("ogeDag"));
-            jedis.close();
+        try {
+//            Jedis jedis = jedisPool.getResource();
+//            jedis.set("ogeDag", dagString);
+//            // 设置为5分钟
+//            jedis.expire("ogeDag", 300);
+//            System.out.println(jedis.get("ogeDag"));
+//            jedis.close();
             webSocket.sendStatusOfSaveDag(spaceParam);
-        }catch (Exception e){
+        } catch (Exception e) {
             webSocket.sendStatusOfSaveDag("Fail");
         }
     }
@@ -56,29 +72,43 @@ public class JsonReceiverController {
     }
 
     @PostMapping("/runDagJson")
-    public String runDagJson(@RequestParam("level") int level, @RequestParam("spatialRange") String spatialRange) {
-        Jedis jedis = jedisPool.getResource();
-        if (jedis.exists("ogeDag")) {
-            String ogeDagStr = jedis.get("ogeDag");
-            JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-            String[] spatialRangeList = spatialRange.split(",");
-            ArrayList<Float> spatialRangeFloat = new ArrayList<>();
-            for (String s : spatialRangeList) {
-                spatialRangeFloat.add(Float.parseFloat(s));
-            }
-            JSONObject mapObject = new JSONObject();
-            mapObject.put("level", level);
-            mapObject.put("spatialRange", spatialRangeFloat);
-            ogeDagJson.put("map", mapObject);
-            ogeDagJson.put("oorB", "0");
-            String paramStr = ogeDagJson.toJSONString();
-            jedis.close();
-            return livyTrigger(paramStr);
-        } else {
-            jedis.close();
-            return "Error";
-        }
+    public String runDagJson(@RequestParam("level") int level,
+                             @RequestParam("spatialRange") String spatialRange,
+                             HttpSession httpSession) {//TODO
+
+        JSONObject ogeDagJson = (JSONObject) httpSession.getAttribute("OGE_DAG_JSON");
+        // 如果没有获取到数据
+        if (ogeDagJson.isEmpty()) return "Error";
+
+        return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson));
+
+
+//        Jedis jedis = jedisPool.getResource();
+//        if (jedis.exists("ogeDag")) {
+//            String ogeDagStr = jedis.get("ogeDag");
+//            JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
+//            String[] spatialRangeList = spatialRange.split(",");
+//            ArrayList<Float> spatialRangeFloat = new ArrayList<>();
+//            for (String s : spatialRangeList) {
+//                spatialRangeFloat.add(Float.parseFloat(s));
+//            }
+//            JSONObject mapObject = new JSONObject();
+//            mapObject.put("level", level);
+//            mapObject.put("spatialRange", spatialRangeFloat);
+//            ogeDagJson.put("map", mapObject);
+//            ogeDagJson.put("oorB", "0");
+//            String paramStr = ogeDagJson.toJSONString();
+//            jedis.close();
+//            return livyTrigger(paramStr);
+//        } else {
+//            jedis.close();
+//            return "Error";
+//        }
+
+
     }
+
+
 
     @PostMapping("/runDagJsonBatch")
     public String runDagJsonBatch() {
@@ -109,6 +139,7 @@ public class JsonReceiverController {
         String ogeDagStr;
         while (true) {
             try {
+                assert br != null;
                 if (((ogeDagStr = br.readLine()) != null)) {
                     break;
                 }
@@ -117,17 +148,7 @@ public class JsonReceiverController {
             }
         }
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-        String[] spatialRangeList = spatialRange.split(",");
-        ArrayList<Float> spatialRangeFloat = new ArrayList<>();
-        for (String s : spatialRangeList) {
-            spatialRangeFloat.add(Float.parseFloat(s));
-        }
-        JSONObject mapObject = new JSONObject();
-        mapObject.put("level", level);
-        mapObject.put("spatialRange", spatialRangeFloat);
-        ogeDagJson.put("map", mapObject);
-        ogeDagJson.put("oorB", "0");
-        String paramStr = ogeDagJson.toJSONString();
+        String paramStr = BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson);
         return sparkSubmitTrigger(paramStr);
     }
 
@@ -180,7 +201,7 @@ public class JsonReceiverController {
         return st;
     }
 
-    @GetMapping ("/getjsonstring")
+    @GetMapping("/getjsonstring")
     public void getJson(@RequestBody String param) {
         String jsonString = param;
 
@@ -201,6 +222,7 @@ public class JsonReceiverController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
 
         //读取output.txt
         File file = new File("/home/geocube/oge/oge-server/dag-boot/output.txt");
@@ -275,4 +297,7 @@ public class JsonReceiverController {
             e.printStackTrace();
         }
     }
+
+
+
 }

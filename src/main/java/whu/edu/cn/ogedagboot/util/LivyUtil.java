@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import scala.annotation.meta.param;
+import whu.edu.cn.ogedagboot.controller.CallbackController;
 
 import java.io.*;
 import java.net.Socket;
@@ -80,7 +81,7 @@ public class LivyUtil {
         }
     }
 
-    public static String livyTrigger(String param) {
+    public static String livyTrigger(String workTaskJSON) {
         String host = "125.220.153.26";
         String port = "19101";
         String baseUrl = "http://" + host + ":" + port;
@@ -93,12 +94,17 @@ public class LivyUtil {
                             "cd /home/geocube/tomcat8/apache-tomcat-8.5.57/webapps/" + "\n" + "rm -rf webapi" + "\n" + "mkdir webapi" + "\n";
             System.out.println("st = " + st);
             runCmd(st, "UTF-8");
-        } catch (Exception e) {
+        } catch (Exception e) {//TODO
             e.printStackTrace();
         }
         long time = System.currentTimeMillis();
-        String fileNameJson = "/home/geocube/oge/oge-server/dag-boot/on-the-fly/outputjson_" + time + ".txt";
-        String fileName = "/home/geocube/oge/oge-server/dag-boot/on-the-fly/output_" + time + ".txt";
+        String curWorkID = "" + time;
+
+//        String fileNameJson = "/home/geocube/oge/oge-server/dag-boot/on-the-fly/outputjson_" + time + ".txt";
+
+
+//        String fileName = "/home/geocube/oge/oge-server/dag-boot/on-the-fly/output_" + time + ".txt";
+/*
         File writeFile = new File(fileNameJson);
         Writer writer = null;
         try {
@@ -108,6 +114,7 @@ public class LivyUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
+*/
 
         //获取所有的session
         String allSessionInfoString = sendGet(baseUrl + "/sessions/");
@@ -142,15 +149,14 @@ public class LivyUtil {
 
         //检查session能否使用
         int sessionIdAvailable = -1;
-        for (int i = 0; i < sessionIdList.size(); i++) {
-            String sessionInfoString = sendGet(baseUrl + "/sessions/" + sessionIdList.get(i));
+        for (Integer integer : sessionIdList) {
+            String sessionInfoString = sendGet(baseUrl + "/sessions/" + integer);
             JSONObject sessionInfoJson = JSON.parseObject(sessionInfoString);
             if (Objects.equals(sessionInfoJson.getString("state"), "idle")) {
-                sessionIdAvailable = sessionIdList.get(i);
+                sessionIdAvailable = integer;
                 break;
-            }
-            else if(Objects.equals(sessionInfoJson.getString("state"), "idle")){
-                sendDelete(baseUrl + "/sessions/" + sessionIdList.get(i));
+            } else if (Objects.equals(sessionInfoJson.getString("state"), "idle")) {
+                sendDelete(baseUrl + "/sessions/" + integer);
             }
         }
 
@@ -170,7 +176,8 @@ public class LivyUtil {
 
         //提交任务给session
         JSONObject body = new JSONObject();
-        String code = "whu.edu.cn.application.oge.Trigger.runMain(sc,\"" + fileNameJson + "\",\"" + fileName + "\")";
+        String code = "whu.edu.cn.application.oge.Trigger.runMain(sc,\"" + workTaskJSON /* modis.json */
+                + "\",\"" + curWorkID /* 当前的工作ID */ + "\")";
         body.put("code", code);
         body.put("kind", "spark");
         String parameter = body.toJSONString();
@@ -190,24 +197,42 @@ public class LivyUtil {
             }
         }
 
-        //读取output.txt
-        File file = new File(fileName);
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(file));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+
+
+
+
+
+
+
+
+
+        if (!(CallbackController.outJsonOfTMS.containsKey(curWorkID))){
+            throw new RuntimeException("获取 outJson 失败！！");
         }
-        String stout;
-        while (true) {
-            try {
-                if (((stout = br.readLine()) != null)) {
-                    break;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return stout;
+        // 返回 outJson,也就是当前工作ID对应的ogc计算结果，原out.txt
+        return CallbackController.outJsonOfTMS.remove(curWorkID);
+
+
+
+
+//        //读取output.txt
+//        File file = new File(fileName);
+//        BufferedReader br = null;
+//        try {
+//            br = new BufferedReader(new FileReader(file));
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//        String stout;
+//        while (true) {
+//            try {
+//                if (((stout = br.readLine()) != null)) {
+//                    break;
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        return stout;
     }
 }

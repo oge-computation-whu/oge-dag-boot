@@ -2,6 +2,7 @@ package whu.edu.cn.ogedagboot.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.web.bind.annotation.*;
+import whu.edu.cn.ogedagboot.util.BuildStrUtil;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -31,17 +32,7 @@ public class cymAPIController {
             }
         }
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-        String[] spatialRangeList = spatialRange.split(",");
-        ArrayList<Float> spatialRangeFloat = new ArrayList<>();
-        for (String s : spatialRangeList) {
-            spatialRangeFloat.add(Float.parseFloat(s));
-        }
-        JSONObject mapObject = new JSONObject();
-        mapObject.put("level", level);
-        mapObject.put("spatialRange", spatialRangeFloat);
-        ogeDagJson.put("map", mapObject);
-        ogeDagJson.put("oorB", "0");
-        String paramStr = ogeDagJson.toJSONString();
+        String paramStr = BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson);
         return sparkSubmitTrigger(paramStr);
     }
 
@@ -65,17 +56,7 @@ public class cymAPIController {
             }
         }
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-        String[] spatialRangeList = spatialRange.split(",");
-        ArrayList<Float> spatialRangeFloat = new ArrayList<>();
-        for (String s : spatialRangeList) {
-            spatialRangeFloat.add(Float.parseFloat(s));
-        }
-        JSONObject mapObject = new JSONObject();
-        mapObject.put("level", level);
-        mapObject.put("spatialRange", spatialRangeFloat);
-        ogeDagJson.put("map", mapObject);
-        ogeDagJson.put("oorB", "0");
-        String paramStr = ogeDagJson.toJSONString();
+        String paramStr = BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson);
         return sparkSubmitTrigger(paramStr);
     }
 
@@ -99,17 +80,7 @@ public class cymAPIController {
             }
         }
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-        String[] spatialRangeList = spatialRange.split(",");
-        ArrayList<Float> spatialRangeFloat = new ArrayList<>();
-        for (String s : spatialRangeList) {
-            spatialRangeFloat.add(Float.parseFloat(s));
-        }
-        JSONObject mapObject = new JSONObject();
-        mapObject.put("level", level);
-        mapObject.put("spatialRange", spatialRangeFloat);
-        ogeDagJson.put("map", mapObject);
-        ogeDagJson.put("oorB", "0");
-        String paramStr = ogeDagJson.toJSONString();
+        String paramStr = BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson);
         return sparkSubmitTrigger(paramStr);
     }
 
@@ -133,17 +104,7 @@ public class cymAPIController {
             }
         }
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-        String[] spatialRangeList = spatialRange.split(",");
-        ArrayList<Float> spatialRangeFloat = new ArrayList<>();
-        for (String s : spatialRangeList) {
-            spatialRangeFloat.add(Float.parseFloat(s));
-        }
-        JSONObject mapObject = new JSONObject();
-        mapObject.put("level", level);
-        mapObject.put("spatialRange", spatialRangeFloat);
-        ogeDagJson.put("map", mapObject);
-        ogeDagJson.put("oorB", "0");
-        String paramStr = ogeDagJson.toJSONString();
+        String paramStr = BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson);
         return sparkSubmitTrigger(paramStr);
     }
 
@@ -167,17 +128,7 @@ public class cymAPIController {
             }
         }
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-        String[] spatialRangeList = spatialRange.split(",");
-        ArrayList<Float> spatialRangeFloat = new ArrayList<>();
-        for (String s : spatialRangeList) {
-            spatialRangeFloat.add(Float.parseFloat(s));
-        }
-        JSONObject mapObject = new JSONObject();
-        mapObject.put("level", level);
-        mapObject.put("spatialRange", spatialRangeFloat);
-        ogeDagJson.put("map", mapObject);
-        ogeDagJson.put("oorB", "0");
-        String paramStr = ogeDagJson.toJSONString();
+        String paramStr = BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson);
         return sparkSubmitTrigger(paramStr);
     }
 
@@ -201,17 +152,7 @@ public class cymAPIController {
             }
         }
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-        String[] spatialRangeList = spatialRange.split(",");
-        ArrayList<Float> spatialRangeFloat = new ArrayList<>();
-        for (String s : spatialRangeList) {
-            spatialRangeFloat.add(Float.parseFloat(s));
-        }
-        JSONObject mapObject = new JSONObject();
-        mapObject.put("level", level);
-        mapObject.put("spatialRange", spatialRangeFloat);
-        ogeDagJson.put("map", mapObject);
-        ogeDagJson.put("oorB", "0");
-        String paramStr = ogeDagJson.toJSONString();
+        String paramStr = BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson);
         return sparkSubmitTrigger(paramStr);
     }
 
@@ -235,17 +176,7 @@ public class cymAPIController {
             }
         }
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-        String[] spatialRangeList = spatialRange.split(",");
-        ArrayList<Float> spatialRangeFloat = new ArrayList<>();
-        for (String s : spatialRangeList) {
-            spatialRangeFloat.add(Float.parseFloat(s));
-        }
-        JSONObject mapObject = new JSONObject();
-        mapObject.put("level", level);
-        mapObject.put("spatialRange", spatialRangeFloat);
-        ogeDagJson.put("map", mapObject);
-        ogeDagJson.put("oorB", "0");
-        String paramStr = ogeDagJson.toJSONString();
+        String paramStr = BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson);
         return sparkSubmitTrigger(paramStr);
     }
 
@@ -269,17 +200,7 @@ public class cymAPIController {
             }
         }
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-        String[] spatialRangeList = spatialRange.split(",");
-        ArrayList<Float> spatialRangeFloat = new ArrayList<>();
-        for (String s : spatialRangeList) {
-            spatialRangeFloat.add(Float.parseFloat(s));
-        }
-        JSONObject mapObject = new JSONObject();
-        mapObject.put("level", level);
-        mapObject.put("spatialRange", spatialRangeFloat);
-        ogeDagJson.put("map", mapObject);
-        ogeDagJson.put("oorB", "0");
-        String paramStr = ogeDagJson.toJSONString();
+        String paramStr = BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson);
         return sparkSubmitTrigger(paramStr);
     }
 
@@ -303,17 +224,7 @@ public class cymAPIController {
             }
         }
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-        String[] spatialRangeList = spatialRange.split(",");
-        ArrayList<Float> spatialRangeFloat = new ArrayList<>();
-        for (String s : spatialRangeList) {
-            spatialRangeFloat.add(Float.parseFloat(s));
-        }
-        JSONObject mapObject = new JSONObject();
-        mapObject.put("level", level);
-        mapObject.put("spatialRange", spatialRangeFloat);
-        ogeDagJson.put("map", mapObject);
-        ogeDagJson.put("oorB", "0");
-        String paramStr = ogeDagJson.toJSONString();
+        String paramStr = BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson);
         return sparkSubmitTrigger(paramStr);
     }
 }
