@@ -8,6 +8,7 @@ import redis.clients.jedis.JedisPool;
 import whu.edu.cn.ogedagboot.bean.WebSocket;
 import whu.edu.cn.ogedagboot.util.BuildStrUtil;
 import whu.edu.cn.ogedagboot.util.LivyUtil;
+import whu.edu.cn.ogedagboot.util.SystemConstants;
 
 import javax.servlet.http.HttpSession;
 import java.io.*;
@@ -20,7 +21,7 @@ import static whu.edu.cn.ogedagboot.util.SSHClientUtil.runCmd;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.versouSshUtil;
 import static whu.edu.cn.ogedagboot.util.SparkLauncherUtil.sparkSubmitTrigger;
 import static whu.edu.cn.ogedagboot.util.SparkLauncherUtil.sparkSubmitTriggerBatch;
-import static whu.edu.cn.ogedagboot.util.SystemConstants.OGE_DAG_PREFIX;
+
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -35,7 +36,7 @@ public class JsonReceiverController {
     private JedisPool jedisPool;
 
     @PostMapping("/saveDagJson")
-    public void saveDagJson(@RequestBody String params, HttpSession httpSession) throws InterruptedException {
+    public void saveDagJson(@RequestBody String params, HttpSession httpSession) {
 
 
 
@@ -48,6 +49,12 @@ public class JsonReceiverController {
 
         // 看下是不是
         System.out.println(ogeDagJson);
+
+
+        // 生成原始业务ID，就是用户点击run之后的整个业务
+        long timeMillis = System.currentTimeMillis();
+        String originTaskID = SystemConstants.ORIGIN_TASK_PREFIX + timeMillis;
+        httpSession.setAttribute("ORIGIN_TASK_ID",originTaskID);
 
         String spaceParam = "None";
         if (paramsObject.containsKey("spaceParams")) {
@@ -76,11 +83,16 @@ public class JsonReceiverController {
                              @RequestParam("spatialRange") String spatialRange,
                              HttpSession httpSession) {//TODO
 
-        JSONObject ogeDagJson = (JSONObject) httpSession.getAttribute("OGE_DAG_JSON");
-        // 如果没有获取到数据
-        if (ogeDagJson.isEmpty()) return "Error";
+        String ogeDagJsonStr = (String) httpSession.getAttribute("OGE_DAG_JSON");
 
-        return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson));
+        // 如果没有获取到数据
+        if (ogeDagJsonStr.isEmpty()) return "Error";
+
+
+        JSONObject ogeDagJson = JSONObject.parseObject(ogeDagJsonStr);
+        String originTaskId = (String) httpSession.getAttribute("ORIGIN_TASK_ID");
+
+        return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson),originTaskId);
 
 
 //        Jedis jedis = jedisPool.getResource();

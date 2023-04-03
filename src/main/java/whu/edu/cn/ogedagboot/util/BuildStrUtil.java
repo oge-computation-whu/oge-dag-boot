@@ -13,7 +13,9 @@ public class BuildStrUtil {
      * @param ogeDagJson 点击run后生成的任务JSON
      * @return 子任务JSON
      */
-    public static String buildChildTaskJSON(@RequestParam("level") int level, @RequestParam("spatialRange") String spatialRange, JSONObject ogeDagJson) {
+    public static String buildChildTaskJSON(@RequestParam("level") int level,
+                                            @RequestParam("spatialRange") String spatialRange,
+                                            JSONObject ogeDagJson) {
         String[] spatialRangeList = spatialRange.split(",");
         ArrayList<Float> spatialRangeFloat = new ArrayList<>();
         for (String s : spatialRangeList) {

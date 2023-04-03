@@ -81,7 +81,7 @@ public class LivyUtil {
         }
     }
 
-    public static String livyTrigger(String workTaskJSON) {
+    public static String livyTrigger(String workTaskJSON, String originTaskID) {
         String host = "125.220.153.26";
         String port = "19101";
         String baseUrl = "http://" + host + ":" + port;
@@ -176,8 +176,11 @@ public class LivyUtil {
 
         //提交任务给session
         JSONObject body = new JSONObject();
-        String code = "whu.edu.cn.application.oge.Trigger.runMain(sc,\"" + workTaskJSON /* modis.json */
-                + "\",\"" + curWorkID /* 当前的工作ID */ + "\")";
+        String code = "whu.edu.cn.application.oge.Trigger.runMain(sc," +
+                "\"" + workTaskJSON /* modis.json */ + "\"," +
+                "\"" + curWorkID /* 当前的工作ID */ + "\"" +
+                "\"" + originTaskID /* 第一次点run标识的业务 */ + "\"" +
+                ")";
         body.put("code", code);
         body.put("kind", "spark");
         String parameter = body.toJSONString();
@@ -206,11 +209,11 @@ public class LivyUtil {
 
 
 
-        if (!(CallbackController.outJsonOfTMS.containsKey(curWorkID))){
+        if (!(CallbackController.outJsonsOfTMS.containsKey(curWorkID))){
             throw new RuntimeException("获取 outJson 失败！！");
         }
         // 返回 outJson,也就是当前工作ID对应的ogc计算结果，原out.txt
-        return CallbackController.outJsonOfTMS.remove(curWorkID);
+        return CallbackController.outJsonsOfTMS.remove(curWorkID);
 
 
 
