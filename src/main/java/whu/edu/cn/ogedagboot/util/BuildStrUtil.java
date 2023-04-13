@@ -28,4 +28,11 @@ public class BuildStrUtil {
         ogeDagJson.put("oorB", "0");
         return ogeDagJson.toJSONString();
     }
+
+
+
+
+    public static String convertStr(String in){
+        return in.replaceAll("\"", "\\\\\"");
+    }
 }

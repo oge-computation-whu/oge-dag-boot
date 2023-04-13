@@ -48,6 +48,7 @@ public class cymAPIController {
         String ogeDagStr;
         while (true) {
             try {
+                assert br != null;
                 if (((ogeDagStr = br.readLine()) != null)) {
                     break;
                 }

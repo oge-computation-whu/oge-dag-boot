@@ -174,11 +174,12 @@ public class LivyUtil {
             sessionIdAvailable = sessionIdList.get(0);
         }
 
+        workTaskJSON = BuildStrUtil.convertStr(workTaskJSON);
         //提交任务给session
         JSONObject body = new JSONObject();
         String code = "whu.edu.cn.application.oge.Trigger.runMain(sc," +
                 "\"" + workTaskJSON /* modis.json */ + "\"," +
-                "\"" + curWorkID /* 当前的工作ID */ + "\"" +
+                "\"" + curWorkID /* 当前的工作ID */ + "\"," +
                 "\"" + originTaskID /* 第一次点run标识的业务 */ + "\"" +
                 ")";
         body.put("code", code);
@@ -200,6 +201,8 @@ public class LivyUtil {
             }
         }
 
+
+        System.out.println(curWorkID);
 
 
 
