@@ -65,7 +65,7 @@ public class LivyUtil {
             body.put("kind", "spark");
             body.put("executorCores", 8);
             body.put("executorMemory", "3g");
-            String[] str = {"local:/home/geocube/oge/oge-server/dag-boot/oge-computation_ogc_on_the_fly.jar"};
+            String[] str = {"local:/home/geocube/oge/oge-server/dag-boot/dependency/oge-computation_ogc_on_the_fly.jar"};
             body.put("jars", str);
             JSONObject bodyChildren = new JSONObject();
             bodyChildren.put("spark.driver.extraClassPath", "local:/home/geocube/spark/jars/*");
@@ -136,7 +136,7 @@ public class LivyUtil {
                 body.put("kind", "spark");
                 body.put("executorCores", 8);
                 body.put("executorMemory", "3g");
-                String[] str = {"local:/home/geocube/oge/oge-server/dag-boot/oge-computation_ogc_on_the_fly.jar"};
+                String[] str = {"local:/home/geocube/oge/oge-server/dag-boot/dependency/oge-computation_ogc_on_the_fly.jar"};
                 body.put("jars", str);
                 JSONObject bodyChildren = new JSONObject();
                 bodyChildren.put("spark.driver.extraClassPath", "local:/home/geocube/spark/jars/*");
