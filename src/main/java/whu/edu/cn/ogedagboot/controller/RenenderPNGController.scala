@@ -13,8 +13,10 @@ import geotrellis.store.{AttributeStore, LayerId, Reader, ValueNotFoundError, Va
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.{PathVariable, RequestMapping, ResponseBody, RestController}
 
+import javax.servlet.http.HttpSession
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent._
+
 
 
 @RestController
@@ -32,15 +34,74 @@ class RenenderPNGController {
     "BlueToOrange", "GreenToRedOrange", "LightToDarkGreen", "LightYellowToOrange", "Magma", "Plasma", "Inferno", "Viridis", "Greyscale")
 
 
+
   @RequestMapping(value = Array("{layerId}/{zoom}/{x}/{y}.png"), produces = Array(MediaType.IMAGE_PNG_VALUE))
   @ResponseBody
-  def renderBean(@PathVariable layerId: String, @PathVariable zoom: Int, @PathVariable x: Int, @PathVariable y: Int): Array[Byte] = {
+  def renderBean(@PathVariable layerId: String, @PathVariable zoom: Int, @PathVariable x: Int, @PathVariable y: Int, httpSession: HttpSession): Array[Byte] = {
 
 
-    println("zoom: "+zoom)
-    // TODO
-    //  色带,预设值：HeatmapBlueToYellowToRedSpectrum
+    //
+    //    // TODO 从 session 中获取并解析渲染参数
+    //
+    //    // TODO 系统色带类型
+    //    val systemColorRamp = httpSession.getAttribute("systemColorRamp")
+    //    println("systemColorRamp: " + systemColorRamp)
+    //
+    //    // TODO 灰度分割阈值，为系统色带中 Greyscale 的传入参数
+    //    val thresholdValue = httpSession.getAttribute("thresholdValue").toString.toInt
+    //    println("thresholdValue: " + thresholdValue)
+    //
+    //    // TODO 表示传入的颜色值的表达方式——0:RGBA , 1: 0x16进制
+    //    val colorType = httpSession.getAttribute("colorType")
+    //    println("colorType: " + colorType)
+    //
+    //
+    //    // TODO 用于存储RGBA型色带颜色值
+    //    val rgbaValues = httpSession.getAttribute("rgbaValues").toString.stripPrefix("[").stripSuffix("]").split("\\],\\[").map(_.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toInt))
+    //    rgbaValues.map(e => {
+    //      println("rgbaValues: " + e.toList.toString())
+    //    })
+    //
+    //
+    //    // TODO 用于存储16进制色带颜色值
+    //    val _0x16Values = httpSession.getAttribute("_0x16Values").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toString)
+    //    val _0x16ValuesTransToRGB = _0x16Values.map(e => {
+    //      var red = java.lang.Integer.parseInt(e.substring(2, 4), 16)
+    //      var green = java.lang.Integer.parseInt(e.substring(4, 6), 16)
+    //      var blue = java.lang.Integer.parseInt(e.substring(6, 8), 16)
+    //      var alpha = java.lang.Integer.parseInt(e.substring(8, 10), 16)
+    //      println(red, green, blue, alpha)
+    //      Array(red, green, blue, alpha)
+    //    })
+    //
+    //    // TODO 0：没有输入渐变点个数， 1：输入了渐变点个数
+    //    val gradientPointsSelected = httpSession.getAttribute("gradientPointsSelected")
+    //    println("gradientPointsSelected: " + gradientPointsSelected)
+    //
+    //
+    //    // TODO 渐变点个数，默认为 100
+    //    val gradientPointsNumber = httpSession.getAttribute("gradientPointsNumber").toString.toInt
+    //    println("gradientPointsNumber: " + gradientPointsNumber)
+    //
+    //
+    //    // TODO 0:不设置分位数， 1：根据直方图自动计算  2：用户自定义
+    //    val colorQuantileSelected = httpSession.getAttribute("colorQuantileSelected").toString.toInt
+    //    println("colorQuantileSelected: " + colorQuantileSelected)
+    //
+    //
+    //    // TODO 用户自定义颜色分位数
+    //    val colorQuantile = httpSession.getAttribute("colorQuantile").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toDouble)
+    //    colorQuantile.foreach(e => {
+    //      println("colorQuantile:" + e)
+    //    })
+
+    println("----------------------------------------------------")
+
+
+    // TODO 色带, 预设值：HeatmapBlueToYellowToRedSpectrum
     var colorRamp = ColorRamps.HeatmapBlueToYellowToRedSpectrum
+
+
     // TODO 以下参数为前端传入
     val systemColorRamp = "HeatmapBlueToYellowToRedSpectrum" // TODO 系统色带类型
     val thresholdValue = 100 // TODO 灰度分割阈值，为系统色带中 Greyscale 的传入参数
@@ -49,10 +110,13 @@ class RenenderPNGController {
     val _0x16Values: List[Int] = List(0xD76B27FF, 0x2586ABFF) // TODO 用于存储16进制色带颜色值
     val gradientPointsSelected = 1 // TODO 0：没有输入渐变点个数， 1：输入了渐变点个数
     val gradientPointsNumber = 100 // TODO 渐变点个数,默认为100
-    val colorQuantileSelected = 0 // TODO 0:不设置分位数， 1：根据直方图自动计算  2：用户自定义
-    val colorQuantile: Array[Double] = Array(0.6, 0.8, 0.9) // TODO 用户自定义颜色分位数
+    val colorQuantileSelected = 1 // TODO 0:不设置分位数， 1：根据直方图自动计算  2：用户自定义
+    val colorQuantile: Array[Double] = Array(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8, 0.9) // TODO 用户自定义颜色分位数 , 如：Array(0.6, 0.8, 0.9)
+
+
     var colorMap: ColorMap = colorRamp.toColorMap(colorQuantile)
     var png: Png = null
+
 
     val renderArray = layerId.split("_")(1).split("-")
     val palette = renderArray(0)
@@ -83,10 +147,12 @@ class RenenderPNGController {
       // TODO 当前缩放等级下，影像像素灰度的最大最小值
       val Min = tile.findMinMax._1
       val Max = tile.findMinMax._2
+      // TODO Max - Min
       val difference = Max - Min
 
 
       // TODO 色带色域
+
       colorRamp =
         if (systemColorRamp != "null") {
           if (predefinedColorRamp.contains(systemColorRamp)) {
@@ -122,7 +188,8 @@ class RenenderPNGController {
             ColorRamp(rgbaColors: _*).stops(rgbaColors.length)
           }
           else {
-            ColorRamp(_0x16Values: _*).stops(_0x16Values.length)
+            val rgbaColors = rgbaValues.map(c => geotrellis.raster.render.RGBA(c(0), c(1), c(2), c(3)))
+            ColorRamp(rgbaColors: _*).stops(rgbaColors.length)
           }
         }
         else {
@@ -143,7 +210,7 @@ class RenenderPNGController {
           case 0 => colorMap
           case 1 => colorRamp.toColorMap(tile.histogram)
           case 2 => {
-            colorRamp.toColorMap(colorQuantile.map(_*difference+Min))
+            colorRamp.toColorMap(colorQuantile.map(_ * difference + Min))
           }
         }
       }
