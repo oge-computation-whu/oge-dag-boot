@@ -86,7 +86,9 @@ public class JsonReceiverController {
         String ogeDagJsonStr = (String) httpSession.getAttribute("OGE_DAG_JSON");
 
         // 如果没有获取到数据
-        if (ogeDagJsonStr.isEmpty()) return "Error";
+        if (ogeDagJsonStr.isEmpty()) {
+            return "Error";
+        }
 
 
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagJsonStr);
