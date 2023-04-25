@@ -91,10 +91,43 @@ public class JsonReceiverController {
         }
 
 
-        JSONObject ogeDagJson = JSONObject.parseObject(ogeDagJsonStr);
-        String originTaskId = (String) httpSession.getAttribute("ORIGIN_TASK_ID");
+        String flagKey = "isRunDagJsonFinished"; // 标记状态
+        String resKey = "resultDagJson"; // 传递结果
 
-        return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson),originTaskId);
+        if (httpSession.getAttribute(flagKey) == null){
+            httpSession.setAttribute(flagKey,false);
+            new Thread(()->{
+                JSONObject ogeDagJson = JSONObject.parseObject(ogeDagJsonStr);
+                String originTaskId = (String) httpSession.getAttribute("ORIGIN_TASK_ID");
+                String res = livyTrigger(
+                        BuildStrUtil.buildChildTaskJSON(
+                        level, spatialRange, ogeDagJson
+                        ),originTaskId);
+                httpSession.setAttribute(flagKey,true);
+                httpSession.setAttribute(resKey,res);
+            }).start();
+
+            return "start";
+        }
+
+        if (httpSession.getAttribute(flagKey).equals(true) &&
+                httpSession.getAttribute(resKey) != null
+        ){
+            String resJson = (String) httpSession.getAttribute(resKey);
+            httpSession.removeAttribute(flagKey);
+            httpSession.removeAttribute(resKey);
+            return resJson;
+        }
+
+
+
+
+        return "running";
+
+
+
+
+
 
 
 //        Jedis jedis = jedisPool.getResource();
