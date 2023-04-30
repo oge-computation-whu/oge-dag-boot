@@ -45,10 +45,69 @@ public class JsonReceiverController {
         String ogeDagJson = paramsObject.getString("dag");
 
         // 写入session
-        httpSession.setAttribute("OGE_DAG_JSON", ogeDagJson);
+        // httpSession.setAttribute("OGE_DAG_JSON", ogeDagJson);
 
         // 看下是不是
-        System.out.println(ogeDagJson);
+        // System.out.println(ogeDagJson);
+
+        // 取出各个 Render 参数 , 并存入 session
+        JSONObject renderParamsObject = JSONObject.parseObject(ogeDagJson).getJSONObject("renderParams");
+
+
+        // 系统色带类型
+        String systemColorRamp = renderParamsObject.getString("systemColorRamp");
+        httpSession.setAttribute("systemColorRamp", systemColorRamp);
+
+
+        // 灰度分割阈值，为系统色带中 Greyscale 的传入参数
+        int thresholdValue = renderParamsObject.getIntValue("thresholdValue");
+        httpSession.setAttribute("thresholdValue", thresholdValue);
+
+        // 表示传入的颜色值的表达方式——0:RGBA , 1: 0x16进制
+        int colorType = renderParamsObject.getIntValue("colorType");
+        httpSession.setAttribute("colorType", colorType);
+
+
+        // 用于存储RGBA型色带颜色值
+        String rgbaValues = renderParamsObject.getJSONArray("rgbaValues").toString();
+        httpSession.setAttribute("rgbaValues", rgbaValues);
+
+
+        // 用于存储16进制色带颜色值
+        String hexValues = renderParamsObject.getString("hexValues");
+        httpSession.setAttribute("hexValues", hexValues);
+
+
+        // 0：没有输入渐变点个数， 1：输入了渐变点个数
+        int gradientPointsSelected = renderParamsObject.getIntValue("gradientPointsSelected");
+        httpSession.setAttribute("gradientPointsSelected", gradientPointsSelected);
+
+
+        // 渐变点个数，默认为 100
+        int gradientPointsNumber = renderParamsObject.getIntValue("gradientPointsNumber");
+        httpSession.setAttribute("gradientPointsNumber", gradientPointsNumber);
+
+        // 0:不设置分位数， 1：根据直方图自动计算  2：用户自定义
+        int colorQuantileSelected = renderParamsObject.getIntValue("colorQuantileSelected");
+        httpSession.setAttribute("colorQuantileSelected", colorQuantileSelected);
+
+        // 用户自定义颜色分位数
+        String colorQuantile = renderParamsObject.getJSONArray("colorQuantile").toString();
+        httpSession.setAttribute("colorQuantile",colorQuantile);
+
+        // 用户输入的渲染灰度范围
+        String grayScaleRange = renderParamsObject.getJSONArray("grayScaleRange").toString();
+        httpSession.setAttribute("grayScaleRange",grayScaleRange);
+
+
+        // 用于填充超过范围的颜色
+        String fallbackColor = renderParamsObject.getString("fallbackColor");
+        httpSession.setAttribute("fallbackColor", fallbackColor);
+
+        // 用于填充无数据的颜色
+        int noDataColor = renderParamsObject.getIntValue("noDataColor");
+        httpSession.setAttribute("noDataColor", noDataColor);
+
 
 
         // 生成原始业务ID，就是用户点击run之后的整个业务
