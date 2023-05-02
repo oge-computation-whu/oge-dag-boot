@@ -39,7 +39,6 @@ public class JsonReceiverController {
     public void saveDagJson(@RequestBody String params, HttpSession httpSession) {
 
 
-
         JSONObject paramsObject = JSONObject.parseObject(params);
         // 取出dag的
         String ogeDagJson = paramsObject.getString("dag");
@@ -60,10 +59,10 @@ public class JsonReceiverController {
 
 
         // 灰度分割阈值，为系统色带中 Greyscale 的传入参数
-        int thresholdValue = renderParamsObject.getIntValue("thresholdValue");
-        httpSession.setAttribute("thresholdValue", thresholdValue);
+        //int thresholdValue = renderParamsObject.getIntValue("thresholdValue");
+        //httpSession.setAttribute("thresholdValue", thresholdValue);
 
-        // 表示传入的颜色值的表达方式——0:RGBA , 1: 0x16进制
+        // 表示传入的颜色值的表达方式 —— 0:RGBA , 1: 0x16进制
         int colorType = renderParamsObject.getIntValue("colorType");
         httpSession.setAttribute("colorType", colorType);
 
@@ -79,33 +78,34 @@ public class JsonReceiverController {
 
 
         // 0：没有输入渐变点个数， 1：输入了渐变点个数
-        int gradientPointsSelected = renderParamsObject.getIntValue("gradientPointsSelected");
-        httpSession.setAttribute("gradientPointsSelected", gradientPointsSelected);
+        //int gradientPointsSelected = renderParamsObject.getIntValue("gradientPointsSelected");
+        //httpSession.setAttribute("gradientPointsSelected", gradientPointsSelected);
 
 
-        // 渐变点个数，默认为 100
-        int gradientPointsNumber = renderParamsObject.getIntValue("gradientPointsNumber");
-        httpSession.setAttribute("gradientPointsNumber", gradientPointsNumber);
+        // 渐变点个数，默认为 10
+        //int gradientPointsNumber = renderParamsObject.getIntValue("gradientPointsNumber");
+        //httpSession.setAttribute("gradientPointsNumber", gradientPointsNumber);
 
         // 0:不设置分位数， 1：根据直方图自动计算  2：用户自定义
-        int colorQuantileSelected = renderParamsObject.getIntValue("colorQuantileSelected");
-        httpSession.setAttribute("colorQuantileSelected", colorQuantileSelected);
+        //int colorQuantileSelected = renderParamsObject.getIntValue("colorQuantileSelected");
+        //httpSession.setAttribute("colorQuantileSelected", colorQuantileSelected);
 
         // 用户自定义颜色分位数
-        String colorQuantile = renderParamsObject.getJSONArray("colorQuantile").toString();
-        httpSession.setAttribute("colorQuantile",colorQuantile);
+        //String colorQuantile = renderParamsObject.getJSONArray("colorQuantile").toString();
+        //httpSession.setAttribute("colorQuantile",colorQuantile);
 
         // 用户输入的渲染灰度范围
         String grayScaleRange = renderParamsObject.getJSONArray("grayScaleRange").toString();
-        httpSession.setAttribute("grayScaleRange",grayScaleRange);
+        httpSession.setAttribute("grayScaleRange", grayScaleRange);
 
 
         // 用于填充超过范围的颜色
-        String fallbackColor = renderParamsObject.getString("fallbackColor");
+        String fallbackColor = renderParamsObject.getJSONArray("fallbackColor").toString();
         httpSession.setAttribute("fallbackColor", fallbackColor);
 
+
         // 用于填充无数据的颜色
-        int noDataColor = renderParamsObject.getIntValue("noDataColor");
+        String noDataColor = renderParamsObject.getJSONArray("noDataColor").toString();
         httpSession.setAttribute("noDataColor", noDataColor);
 
 
@@ -113,7 +113,7 @@ public class JsonReceiverController {
         // 生成原始业务ID，就是用户点击run之后的整个业务
         long timeMillis = System.currentTimeMillis();
         String originTaskID = SystemConstants.ORIGIN_TASK_PREFIX + timeMillis;
-        httpSession.setAttribute("ORIGIN_TASK_ID",originTaskID);
+        httpSession.setAttribute("ORIGIN_TASK_ID", originTaskID);
 
         String spaceParam = "None";
         if (paramsObject.containsKey("spaceParams")) {
@@ -153,17 +153,17 @@ public class JsonReceiverController {
         String flagKey = "isRunDagJsonFinished"; // 标记状态
         String resKey = "resultDagJson"; // 传递结果
 
-        if (httpSession.getAttribute(flagKey) == null){
-            httpSession.setAttribute(flagKey,false);
-            new Thread(()->{
+        if (httpSession.getAttribute(flagKey) == null) {
+            httpSession.setAttribute(flagKey, false);
+            new Thread(() -> {
                 JSONObject ogeDagJson = JSONObject.parseObject(ogeDagJsonStr);
                 String originTaskId = (String) httpSession.getAttribute("ORIGIN_TASK_ID");
                 String res = livyTrigger(
                         BuildStrUtil.buildChildTaskJSON(
-                        level, spatialRange, ogeDagJson
-                        ),originTaskId);
-                httpSession.setAttribute(flagKey,true);
-                httpSession.setAttribute(resKey,res);
+                                level, spatialRange, ogeDagJson
+                        ), originTaskId);
+                httpSession.setAttribute(flagKey, true);
+                httpSession.setAttribute(resKey, res);
             }).start();
 
             return "start";
@@ -171,7 +171,7 @@ public class JsonReceiverController {
 
         if (httpSession.getAttribute(flagKey).equals(true) &&
                 httpSession.getAttribute(resKey) != null
-        ){
+        ) {
             String resJson = (String) httpSession.getAttribute(resKey);
             httpSession.removeAttribute(flagKey);
             httpSession.removeAttribute(resKey);
@@ -179,14 +179,7 @@ public class JsonReceiverController {
         }
 
 
-
-
         return "running";
-
-
-
-
-
 
 
 //        Jedis jedis = jedisPool.getResource();
@@ -213,7 +206,6 @@ public class JsonReceiverController {
 
 
     }
-
 
 
     @PostMapping("/runDagJsonBatch")
@@ -403,7 +395,6 @@ public class JsonReceiverController {
             e.printStackTrace();
         }
     }
-
 
 
 }
