@@ -2,7 +2,7 @@ package whu.edu.cn.ogedagboot.controller
 
 
 import geotrellis.layer.SpatialKey
-import geotrellis.raster.render.{ColorMap, ColorRamp, ColorRamps, LessThanOrEqualTo, Png}
+import geotrellis.raster.render.{ColorMap, ColorRamp, ColorRamps, Exact, LessThanOrEqualTo, Png}
 import geotrellis.raster.{DoubleConstantNoDataCellType, Tile}
 import geotrellis.store.{AttributeStore, LayerId, ValueNotFoundError, ValueReader}
 import org.springframework.http.MediaType
@@ -796,101 +796,99 @@ class RenenderPNGController {
 
 
 
-    // 从 session 中获取并解析渲染参数
 
-    // 系统色带类型
-    val systemColorRamp = httpSession.getAttribute("systemColorRamp")
-    println("systemColorRamp: " + systemColorRamp)
+        // 从 session 中获取并解析渲染参数
 
-
-    // 灰度分割阈值，为系统色带中 Greyscale 的传入参数
-    //val thresholdValue = httpSession.getAttribute("thresholdValue").toString.toInt
-    //println("thresholdValue: " + thresholdValue)
-
-    // 表示传入的颜色值的表达方式——0:RGBA , 1: 0x16进制
-    val colorType = httpSession.getAttribute("colorType")
-    println("colorType: " + colorType)
+        // 系统色带类型
+        val systemColorRamp = httpSession.getAttribute("systemColorRamp").toString
+        println("systemColorRamp: " + systemColorRamp)
 
 
-    // 用于存储RGBA型色带颜色值
-    val rgbaValues = httpSession.getAttribute("rgbaValues").toString.stripPrefix("[").stripSuffix("]").split("\\],\\[").map(_.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toInt))
-    rgbaValues.map(e => {
-      println("rgbaValues: " + e.toList.toString())
-    })
+        // 灰度分割阈值，为系统色带中 Greyscale 的传入参数
+        //val thresholdValue = httpSession.getAttribute("thresholdValue").toString.toInt
+        //println("thresholdValue: " + thresholdValue)
+
+        // 表示传入的颜色值的表达方式——0:RGBA , 1: 0x16进制
+//        val colorType = httpSession.getAttribute("colorType")
+//        println("colorType: " + colorType)
 
 
-    // 用于存储16进制色带颜色值
-    val hexValues = httpSession.getAttribute("hexValues").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toString)
-    val hexValuesTransToRGB = hexValues.map(e => {
-      var red = java.lang.Integer.parseInt(e.substring(2, 4), 16)
-      var green = java.lang.Integer.parseInt(e.substring(4, 6), 16)
-      var blue = java.lang.Integer.parseInt(e.substring(6, 8), 16)
-      var alpha = java.lang.Integer.parseInt(e.substring(8, 10), 16)
-      println(red, green, blue, alpha)
-      Array(red, green, blue, alpha)
-    })
-
-    // 0：没有输入渐变点个数， 1：输入了渐变点个数
-    val gradientPointsSelected = httpSession.getAttribute("gradientPointsSelected")
-    println("gradientPointsSelected: " + gradientPointsSelected)
+        // 用于存储RGBA型色带颜色值
+//        val rgbaValues = httpSession.getAttribute("rgbaValues").toString.stripPrefix("[").stripSuffix("]").split("\\],\\[").map(_.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toInt))
+//        rgbaValues.map(e => {
+//          println("rgbaValues: " + e.toList.toString())
+//        })
 
 
-    // 渐变点个数，默认为 100
-    val gradientPointsNumber = httpSession.getAttribute("gradientPointsNumber").toString.toInt
-    println("gradientPointsNumber: " + gradientPointsNumber)
-
-
-    // 0:不设置分位数， 1：根据直方图自动计算  2：用户自定义
-    val colorQuantileSelected = httpSession.getAttribute("colorQuantileSelected").toString.toInt
-    println("colorQuantileSelected: " + colorQuantileSelected)
-
-
-    // 用户自定义颜色分位数
-    val colorQuantile = httpSession.getAttribute("colorQuantile").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toDouble)
-    colorQuantile.foreach(e => {
-      println("colorQuantile:" + e)
-    })
-
-    // 用户输入的渲染灰度范围
-    val grayScaleRange = httpSession.getAttribute("grayScaleRange").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toDouble)
-    grayScaleRange.foreach(e => {
-      println("grayScaleRange:" + e)
-    })
-
-    // 用于填充超过范围的颜色
-    val fallbackColor = httpSession.getAttribute("fallbackColor").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toInt)
-    fallbackColor.foreach(e => {
-      println("fallbackColor:" + e)
-    })
-
-    // 用于填充无数据的颜色
-    val noDataColor = httpSession.getAttribute("noDataColor").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toInt)
-    noDataColor.foreach(e => {
-      println("noDataColor:" + e)
-    })
-
-
-
-//        // 以下参数为前端传入
-//        val systemColorRamp = "null" // 系统色带类型
-//        val thresholdValue = 100 // 灰度分割阈值，为系统色带中 Greyscale 的传入参数
-//        val colorType = 1 // 表示传入的颜色值的表达方式 —— 0:RGBA , 1: 0x16进制
-//        val rgbaValues: Array[Array[Int]] = Array(Array(255, 0, 0, 255), Array(0, 255, 0, 255)) // 用于存储RGBA型色带颜色值
-//        val hexValues: Array[String] = "0xFF0000FF, 0x00FF00FF".stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toString) // 用于存储16进制色带颜色值
+        // 用于存储16进制色带颜色值
+//        val hexValues = httpSession.getAttribute("hexValues").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toString)
 //        val hexValuesTransToRGB = hexValues.map(e => {
 //          var red = java.lang.Integer.parseInt(e.substring(2, 4), 16)
 //          var green = java.lang.Integer.parseInt(e.substring(4, 6), 16)
 //          var blue = java.lang.Integer.parseInt(e.substring(6, 8), 16)
 //          var alpha = java.lang.Integer.parseInt(e.substring(8, 10), 16)
+//          println(red, green, blue, alpha)
 //          Array(red, green, blue, alpha)
 //        })
-//        //val gradientPointsSelected = 0 // 0：没有输入渐变点个数， 1：输入了渐变点个数
-//        //val gradientPointsNumber = 10 // 渐变点个数
-//        //val colorQuantileSelected = 1 // 0: 不设置分位数， 1：用户自定义
-//        //val colorQuantile: Array[Double] = (0 to 100).map(_ * 0.01).toArray // 用户自定义颜色分位数
-//        val grayScaleRange: Array[Double] = Array(-40, 200) // 用户输入的渲染灰度范围
-//        var fallbackColor = Array(0,0,0,0) // 用于填充超过范围的颜色
-//        val noDataColor = Array(0,0,0,0) // 用于填充无数据的颜色
+
+        // 0：没有输入渐变点个数， 1：输入了渐变点个数
+//        val gradientPointsSelected = httpSession.getAttribute("gradientPointsSelected")
+//        println("gradientPointsSelected: " + gradientPointsSelected)
+
+
+        // 渐变点个数，默认为 100
+//        val gradientPointsNumber = httpSession.getAttribute("gradientPointsNumber").toString.toInt
+//        println("gradientPointsNumber: " + gradientPointsNumber)
+
+
+        // 0:不设置分位数， 1：根据直方图自动计算  2：用户自定义
+//        val colorQuantileSelected = httpSession.getAttribute("colorQuantileSelected").toString.toInt
+//        println("colorQuantileSelected: " + colorQuantileSelected)
+
+
+        // 用户自定义颜色分位数
+//        val colorQuantile = httpSession.getAttribute("colorQuantile").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toDouble)
+//        colorQuantile.foreach(e => {
+//          println("colorQuantile:" + e)
+//        })
+
+        // 用户输入的渲染灰度范围
+//        val grayScaleRange = httpSession.getAttribute("grayScaleRange").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toDouble)
+//        grayScaleRange.foreach(e => {
+//          println("grayScaleRange:" + e)
+//        })
+
+    val grayScaleMax = httpSession.getAttribute("grayScaleMax").toString.toDouble
+    val grayScaleMin = httpSession.getAttribute("grayScaleMin").toString.toDouble
+
+        // 用于填充超过范围的颜色
+        //val fallbackColor = httpSession.getAttribute("fallbackColor").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toInt)
+
+
+        // 用于填充无数据的颜色
+        //val noDataColor = httpSession.getAttribute("noDataColor").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toInt)
+
+
+    // 以下参数为前端传入
+    //val systemColorRamp = "Turquoise" // 系统色带类型
+    val thresholdValue = 100 // 灰度分割阈值，为系统色带中 Greyscale 的传入参数
+    val colorType = 0 // 表示传入的颜色值的表达方式 —— 0:RGBA , 1: 0x16进制
+    val rgbaValues: Array[Array[Int]] = Array(Array(255, 0, 0, 255), Array(0, 255, 0, 255)) // 用于存储RGBA型色带颜色值
+    val hexValues: Array[String] = "0xFF0000FF, 0x00FF00FF".stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toString) // 用于存储16进制色带颜色值
+    val hexValuesTransToRGB = hexValues.map(e => {
+      var red = java.lang.Integer.parseInt(e.substring(2, 4), 16)
+      var green = java.lang.Integer.parseInt(e.substring(4, 6), 16)
+      var blue = java.lang.Integer.parseInt(e.substring(6, 8), 16)
+      var alpha = java.lang.Integer.parseInt(e.substring(8, 10), 16)
+      Array(red, green, blue, alpha)
+    })
+    //val gradientPointsSelected = 0 // 0：没有输入渐变点个数， 1：输入了渐变点个数
+    //val gradientPointsNumber = 10 // 渐变点个数
+    //val colorQuantileSelected = 1 // 0: 不设置分位数， 1：用户自定义
+    //val colorQuantile: Array[Double] = (0 to 100).map(_ * 0.01).toArray // 用户自定义颜色分位数
+    val grayScaleRange: Array[Double] = Array(0, 255) // 用户输入的渲染灰度范围
+    val fallbackColor = Array(0, 0, 0, 0) // 用于填充超过范围的颜色
+    val noDataColor = Array(0, 0, 0, 0) // 用于填充无数据的颜色
 
 
     // 色带, 预设值：HeatmapBlueToYellowToRed
@@ -898,8 +896,8 @@ class RenenderPNGController {
     var colorMap: ColorMap = null
     var png: Png = null
     // 灰度最大最小值（全局）
-    var max: Double = grayScaleRange(1)
-    var min: Double = grayScaleRange(0)
+    var max: Double = grayScaleMax
+    var min: Double = grayScaleMin
     // 灰度最大最小值差值
     var diff: Double = max - min
 
@@ -934,6 +932,10 @@ class RenenderPNGController {
 
 
 
+
+
+
+
     //    // 获得第一张瓦片
     //    for (tile <- tileOpt) yield {
     //      if (isFirst) {
@@ -948,9 +950,10 @@ class RenenderPNGController {
 
 
 
-
     for (tile <- tileOpt) yield {
       val product: Tile = fn(tile)
+
+
 
       //      // 色带色域
       //      colorRamp =
@@ -1007,7 +1010,7 @@ class RenenderPNGController {
       colorMap =
         if (systemColorRamp != "null") {
           if (predefinedColorMap.contains(systemColorRamp)) {
-            predefinedColorMap(systemColorRamp, min, diff, fallbackColor, noDataColor)
+            predefinedColorMap(systemColorRamp, min, diff, Array(0, 0, 0, 0), Array(0, 0, 0, 0))
           }
           else {
             throw new Exception("参数错误")
@@ -1026,7 +1029,7 @@ class RenenderPNGController {
         }
 
 
-      // 色带渐变点个数
+      // 色带渐变点个数(暂且不考虑）
       //      if (gradientPointsSelected == 1) {
       //        colorRamp = colorRamp.stops(gradientPointsNumber)
       //      }
@@ -1048,6 +1051,8 @@ class RenenderPNGController {
       //          case _ => product.renderPng(colorMap)
       //        }
       //      }
+
+
 
 
       png = product.renderPng(colorMap)

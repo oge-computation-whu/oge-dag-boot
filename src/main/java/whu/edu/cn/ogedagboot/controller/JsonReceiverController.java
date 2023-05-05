@@ -5,11 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import scala.annotation.meta.param;
 import whu.edu.cn.ogedagboot.bean.WebSocket;
 import whu.edu.cn.ogedagboot.util.BuildStrUtil;
 import whu.edu.cn.ogedagboot.util.LivyUtil;
 import whu.edu.cn.ogedagboot.util.SystemConstants;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpSession;
 import java.io.*;
 
@@ -44,18 +46,22 @@ public class JsonReceiverController {
         String ogeDagJson = paramsObject.getString("dag");
 
         // 写入session
-        // httpSession.setAttribute("OGE_DAG_JSON", ogeDagJson);
+        httpSession.setAttribute("OGE_DAG_JSON", ogeDagJson);
 
         // 看下是不是
-        // System.out.println(ogeDagJson);
+        //System.out.println(ogeDagJson);
 
         // 取出各个 Render 参数 , 并存入 session
-        JSONObject renderParamsObject = JSONObject.parseObject(ogeDagJson).getJSONObject("renderParams");
-
+        //JSONObject renderParamsObject = JSONObject.parseObject(ogeDagJson).getJSONObject("renderParams");
+        JSONObject renderParamsObject = JSONObject.parseObject(ogeDagJson).getJSONObject("0").getJSONObject("functionInvocationValue").getJSONObject("arguments");
 
         // 系统色带类型
-        String systemColorRamp = renderParamsObject.getString("systemColorRamp");
+//        String systemColorRamp = renderParamsObject.getString("systemColorRamp");
+//        httpSession.setAttribute("systemColorRamp", systemColorRamp);
+//        System.out.println(systemColorRamp);
+        String systemColorRamp = renderParamsObject.getJSONObject("palette").getString("constantValue");
         httpSession.setAttribute("systemColorRamp", systemColorRamp);
+        System.out.println(systemColorRamp);
 
 
         // 灰度分割阈值，为系统色带中 Greyscale 的传入参数
@@ -63,18 +69,20 @@ public class JsonReceiverController {
         //httpSession.setAttribute("thresholdValue", thresholdValue);
 
         // 表示传入的颜色值的表达方式 —— 0:RGBA , 1: 0x16进制
-        int colorType = renderParamsObject.getIntValue("colorType");
-        httpSession.setAttribute("colorType", colorType);
-
+//        int colorType = renderParamsObject.getIntValue("colorType");
+//        httpSession.setAttribute("colorType", colorType);
+//        System.out.println(colorType);
 
         // 用于存储RGBA型色带颜色值
-        String rgbaValues = renderParamsObject.getJSONArray("rgbaValues").toString();
-        httpSession.setAttribute("rgbaValues", rgbaValues);
+//        String rgbaValues = renderParamsObject.getJSONArray("rgbaValues").toString();
+//        httpSession.setAttribute("rgbaValues", rgbaValues);
+//        System.out.println(rgbaValues);
 
 
         // 用于存储16进制色带颜色值
-        String hexValues = renderParamsObject.getString("hexValues");
-        httpSession.setAttribute("hexValues", hexValues);
+//        String hexValues = renderParamsObject.getString("hexValues");
+//        httpSession.setAttribute("hexValues", hexValues);
+//        System.out.println(hexValues);
 
 
         // 0：没有输入渐变点个数， 1：输入了渐变点个数
@@ -95,18 +103,34 @@ public class JsonReceiverController {
         //httpSession.setAttribute("colorQuantile",colorQuantile);
 
         // 用户输入的渲染灰度范围
-        String grayScaleRange = renderParamsObject.getJSONArray("grayScaleRange").toString();
-        httpSession.setAttribute("grayScaleRange", grayScaleRange);
+//        String max = renderParamsObject.getJSONArray("max").toString();
+//        httpSession.setAttribute("max", max);
+//        System.out.println(max);
+//
+//
+//        String min = renderParamsObject.getJSONArray("min").toString();
+//        httpSession.setAttribute("min", min);
+//        System.out.println(min);
+        // 用户输入的渲染灰度最大值
+        int grayScaleMax = renderParamsObject.getJSONObject("max").getIntValue("constantValue");
+        httpSession.setAttribute("grayScaleMax", grayScaleMax);
+        System.out.println(grayScaleMax);
 
+        // 用户输入的渲染灰度最小值
+        int grayScaleMin = renderParamsObject.getJSONObject("min").getIntValue("constantValue");
+        httpSession.setAttribute("grayScaleMin", grayScaleMin);
+        System.out.println(grayScaleMin);
 
         // 用于填充超过范围的颜色
-        String fallbackColor = renderParamsObject.getJSONArray("fallbackColor").toString();
-        httpSession.setAttribute("fallbackColor", fallbackColor);
+//        String fallbackColor = renderParamsObject.getJSONArray("fallbackColor").toString();
+//        httpSession.setAttribute("fallbackColor", fallbackColor);
+//        System.out.println(fallbackColor);
 
 
         // 用于填充无数据的颜色
-        String noDataColor = renderParamsObject.getJSONArray("noDataColor").toString();
-        httpSession.setAttribute("noDataColor", noDataColor);
+//        String noDataColor = renderParamsObject.getJSONArray("noDataColor").toString();
+//        httpSession.setAttribute("noDataColor", noDataColor);
+//        System.out.println(noDataColor);
 
 
 
@@ -142,6 +166,7 @@ public class JsonReceiverController {
                              @RequestParam("spatialRange") String spatialRange,
                              HttpSession httpSession) {//TODO
 
+
         String ogeDagJsonStr = (String) httpSession.getAttribute("OGE_DAG_JSON");
 
         // 如果没有获取到数据
@@ -149,61 +174,14 @@ public class JsonReceiverController {
             return "Error";
         }
 
-
-        String flagKey = "isRunDagJsonFinished"; // 标记状态
-        String resKey = "resultDagJson"; // 传递结果
-
-        if (httpSession.getAttribute(flagKey) == null) {
-            httpSession.setAttribute(flagKey, false);
-            new Thread(() -> {
-                JSONObject ogeDagJson = JSONObject.parseObject(ogeDagJsonStr);
-                String originTaskId = (String) httpSession.getAttribute("ORIGIN_TASK_ID");
-                String res = livyTrigger(
-                        BuildStrUtil.buildChildTaskJSON(
-                                level, spatialRange, ogeDagJson
-                        ), originTaskId);
-                httpSession.setAttribute(flagKey, true);
-                httpSession.setAttribute(resKey, res);
-            }).start();
-
-            return "start";
-        }
-
-        if (httpSession.getAttribute(flagKey).equals(true) &&
-                httpSession.getAttribute(resKey) != null
-        ) {
-            String resJson = (String) httpSession.getAttribute(resKey);
-            httpSession.removeAttribute(flagKey);
-            httpSession.removeAttribute(resKey);
-            return resJson;
-        }
+        JSONObject ogeDagJson = JSONObject.parseObject(ogeDagJsonStr);
+        String originTaskId = (String) httpSession.getAttribute("ORIGIN_TASK_ID");
 
 
-        return "running";
-
-
-//        Jedis jedis = jedisPool.getResource();
-//        if (jedis.exists("ogeDag")) {
-//            String ogeDagStr = jedis.get("ogeDag");
-//            JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-//            String[] spatialRangeList = spatialRange.split(",");
-//            ArrayList<Float> spatialRangeFloat = new ArrayList<>();
-//            for (String s : spatialRangeList) {
-//                spatialRangeFloat.add(Float.parseFloat(s));
-//            }
-//            JSONObject mapObject = new JSONObject();
-//            mapObject.put("level", level);
-//            mapObject.put("spatialRange", spatialRangeFloat);
-//            ogeDagJson.put("map", mapObject);
-//            ogeDagJson.put("oorB", "0");
-//            String paramStr = ogeDagJson.toJSONString();
-//            jedis.close();
-//            return livyTrigger(paramStr);
-//        } else {
-//            jedis.close();
-//            return "Error";
-//        }
-
+        return livyTrigger(
+                BuildStrUtil.buildChildTaskJSON(
+                        level, spatialRange, ogeDagJson
+                ), originTaskId);
 
     }
 
