@@ -2,11 +2,8 @@ package whu.edu.cn.ogedagboot.util;
 
 import org.apache.spark.launcher.SparkAppHandle;
 import org.apache.spark.launcher.SparkLauncher;
-import org.springframework.web.bind.annotation.RequestBody;
-import whu.edu.cn.ogedagboot.confg.SparkAppParasConfig;
 
 import java.io.*;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 

@@ -1,4 +1,4 @@
-package whu.edu.cn.ogedagboot.confg;
+package whu.edu.cn.ogedagboot.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
