@@ -80,7 +80,7 @@ class RenenderPNGController {
   def predefinedColorMap(systemColorRamp: String, min: Double, diff: Double, noDataColor: Array[Int], fallbackColor: Array[Int]): ColorMap = {
     systemColorRamp match {
       case "HeatmapBlueToYellowToRed" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0x5813fcFF,
@@ -113,7 +113,7 @@ class RenenderPNGController {
           )
         )
       case "HellRed" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0x000004FF,
@@ -146,7 +146,7 @@ class RenenderPNGController {
           )
         )
       case "HeatmapGreenToYellowToRed" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0x38a800FF,
@@ -179,7 +179,7 @@ class RenenderPNGController {
           )
         )
       case "EarthTones" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0xc68062FF,
@@ -212,7 +212,7 @@ class RenenderPNGController {
           )
         )
       case "Turquoise" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0x440154FF,
@@ -245,7 +245,7 @@ class RenenderPNGController {
           )
         )
       case "WaterDepthRange" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0x8a1d5eFF,
@@ -278,7 +278,7 @@ class RenenderPNGController {
           )
         )
       case "Temperature" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0xfdfdfeFF,
@@ -311,7 +311,7 @@ class RenenderPNGController {
           )
         )
       case "Precipitation" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0xc2523cFF,
@@ -344,7 +344,7 @@ class RenenderPNGController {
           )
         )
       case "Enamel" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0x5034c9FF,
@@ -377,7 +377,7 @@ class RenenderPNGController {
           )
         )
       case "GreyToBlack" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0xffffffFF,
@@ -410,7 +410,7 @@ class RenenderPNGController {
           )
         )
       case "Elevation1" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0xaff0e9FF,
@@ -443,7 +443,7 @@ class RenenderPNGController {
           )
         )
       case "Elevation2" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0x267300FF,
@@ -476,7 +476,7 @@ class RenenderPNGController {
           )
         )
       case "Elevation3" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0x458a6fFF,
@@ -509,7 +509,7 @@ class RenenderPNGController {
           )
         )
       case "YellowToGreen" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0xffffe5FF,
@@ -542,7 +542,7 @@ class RenenderPNGController {
           )
         )
       case "HellRed" =>
-        return ColorMap(
+        ColorMap(
           scala.Predef.Map(
             (min).toInt -> geotrellis.raster.render.RGBA(fallbackColor(0), fallbackColor(1), fallbackColor(2), fallbackColor(3)),
             (min + diff / 20 * 1).toInt -> 0xFF,
@@ -799,7 +799,7 @@ class RenenderPNGController {
     // 从 session 中获取并解析渲染参数
 
     // 系统色带类型
-    val systemColorRamp = httpSession.getAttribute("systemColorRamp")
+    val systemColorRamp = httpSession.getAttribute("systemColorRamp").toString
     println("systemColorRamp: " + systemColorRamp)
 
 
@@ -808,89 +808,86 @@ class RenenderPNGController {
     //println("thresholdValue: " + thresholdValue)
 
     // 表示传入的颜色值的表达方式——0:RGBA , 1: 0x16进制
-    val colorType = httpSession.getAttribute("colorType")
-    println("colorType: " + colorType)
+    //    val colorType = httpSession.getAttribute("colorType")
+    //    println("colorType: " + colorType)
 
 
     // 用于存储RGBA型色带颜色值
-    val rgbaValues = httpSession.getAttribute("rgbaValues").toString.stripPrefix("[").stripSuffix("]").split("\\],\\[").map(_.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toInt))
-    rgbaValues.map(e => {
-      println("rgbaValues: " + e.toList.toString())
-    })
+    //    val rgbaValues = httpSession.getAttribute("rgbaValues").toString.stripPrefix("[").stripSuffix("]").split("\\],\\[").map(_.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toInt))
+    //    rgbaValues.map(e => {
+    //      println("rgbaValues: " + e.toList.toString())
+    //    })
 
 
     // 用于存储16进制色带颜色值
-    val hexValues = httpSession.getAttribute("hexValues").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toString)
+    //    val hexValues = httpSession.getAttribute("hexValues").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toString)
+    //    val hexValuesTransToRGB = hexValues.map(e => {
+    //      var red = java.lang.Integer.parseInt(e.substring(2, 4), 16)
+    //      var green = java.lang.Integer.parseInt(e.substring(4, 6), 16)
+    //      var blue = java.lang.Integer.parseInt(e.substring(6, 8), 16)
+    //      var alpha = java.lang.Integer.parseInt(e.substring(8, 10), 16)
+    //      println(red, green, blue, alpha)
+    //      Array(red, green, blue, alpha)
+    //    })
+
+    // 0：没有输入渐变点个数， 1：输入了渐变点个数
+    //    val gradientPointsSelected = httpSession.getAttribute("gradientPointsSelected")
+    //    println("gradientPointsSelected: " + gradientPointsSelected)
+
+
+    // 渐变点个数，默认为 100
+    //    val gradientPointsNumber = httpSession.getAttribute("gradientPointsNumber").toString.toInt
+    //    println("gradientPointsNumber: " + gradientPointsNumber)
+
+
+    // 0:不设置分位数， 1：根据直方图自动计算  2：用户自定义
+    //    val colorQuantileSelected = httpSession.getAttribute("colorQuantileSelected").toString.toInt
+    //    println("colorQuantileSelected: " + colorQuantileSelected)
+
+
+    // 用户自定义颜色分位数
+    //    val colorQuantile = httpSession.getAttribute("colorQuantile").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toDouble)
+    //    colorQuantile.foreach(e => {
+    //      println("colorQuantile:" + e)
+    //    })
+
+    // 用户输入的渲染灰度范围
+    val grayScaleMax = httpSession.getAttribute("grayScaleMax").toString.toDouble
+    val grayScaleMin = httpSession.getAttribute("grayScaleMin").toString.toDouble
+
+    // 用于填充超过范围的颜色
+    //    val fallbackColor = httpSession.getAttribute("fallbackColor").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toInt)
+    //    fallbackColor.foreach(e => {
+    //      println("fallbackColor:" + e)
+    //    })
+
+    // 用于填充无数据的颜色
+    //    val noDataColor = httpSession.getAttribute("noDataColor").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toInt)
+    //    noDataColor.foreach(e => {
+    //      println("noDataColor:" + e)
+    //    })
+
+
+    //        // 以下参数为前端传入
+    //        val systemColorRamp = "null" // 系统色带类型
+    //        val thresholdValue = 100 // 灰度分割阈值，为系统色带中 Greyscale 的传入参数
+    val colorType = 1 // 表示传入的颜色值的表达方式 —— 0:RGBA , 1: 0x16进制
+    val rgbaValues: Array[Array[Int]] = Array(Array(255, 0, 0, 255), Array(0, 255, 0, 255)) // 用于存储RGBA型色带颜色值
+    val hexValues: Array[String] = "0xFF0000FF, 0x00FF00FF".stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toString) // 用于存储16进制色带颜色值
     val hexValuesTransToRGB = hexValues.map(e => {
       var red = java.lang.Integer.parseInt(e.substring(2, 4), 16)
       var green = java.lang.Integer.parseInt(e.substring(4, 6), 16)
       var blue = java.lang.Integer.parseInt(e.substring(6, 8), 16)
       var alpha = java.lang.Integer.parseInt(e.substring(8, 10), 16)
-      println(red, green, blue, alpha)
       Array(red, green, blue, alpha)
     })
-
-    // 0：没有输入渐变点个数， 1：输入了渐变点个数
-    val gradientPointsSelected = httpSession.getAttribute("gradientPointsSelected")
-    println("gradientPointsSelected: " + gradientPointsSelected)
-
-
-    // 渐变点个数，默认为 100
-    val gradientPointsNumber = httpSession.getAttribute("gradientPointsNumber").toString.toInt
-    println("gradientPointsNumber: " + gradientPointsNumber)
-
-
-    // 0:不设置分位数， 1：根据直方图自动计算  2：用户自定义
-    val colorQuantileSelected = httpSession.getAttribute("colorQuantileSelected").toString.toInt
-    println("colorQuantileSelected: " + colorQuantileSelected)
-
-
-    // 用户自定义颜色分位数
-    val colorQuantile = httpSession.getAttribute("colorQuantile").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toDouble)
-    colorQuantile.foreach(e => {
-      println("colorQuantile:" + e)
-    })
-
-    // 用户输入的渲染灰度范围
-    val grayScaleRange = httpSession.getAttribute("grayScaleRange").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toDouble)
-    grayScaleRange.foreach(e => {
-      println("grayScaleRange:" + e)
-    })
-
-    // 用于填充超过范围的颜色
-    val fallbackColor = httpSession.getAttribute("fallbackColor").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toInt)
-    fallbackColor.foreach(e => {
-      println("fallbackColor:" + e)
-    })
-
-    // 用于填充无数据的颜色
-    val noDataColor = httpSession.getAttribute("noDataColor").toString.stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toInt)
-    noDataColor.foreach(e => {
-      println("noDataColor:" + e)
-    })
-
-
-
-//        // 以下参数为前端传入
-//        val systemColorRamp = "null" // 系统色带类型
-//        val thresholdValue = 100 // 灰度分割阈值，为系统色带中 Greyscale 的传入参数
-//        val colorType = 1 // 表示传入的颜色值的表达方式 —— 0:RGBA , 1: 0x16进制
-//        val rgbaValues: Array[Array[Int]] = Array(Array(255, 0, 0, 255), Array(0, 255, 0, 255)) // 用于存储RGBA型色带颜色值
-//        val hexValues: Array[String] = "0xFF0000FF, 0x00FF00FF".stripPrefix("[").stripSuffix("]").split(",").map(_.trim.toString) // 用于存储16进制色带颜色值
-//        val hexValuesTransToRGB = hexValues.map(e => {
-//          var red = java.lang.Integer.parseInt(e.substring(2, 4), 16)
-//          var green = java.lang.Integer.parseInt(e.substring(4, 6), 16)
-//          var blue = java.lang.Integer.parseInt(e.substring(6, 8), 16)
-//          var alpha = java.lang.Integer.parseInt(e.substring(8, 10), 16)
-//          Array(red, green, blue, alpha)
-//        })
-//        //val gradientPointsSelected = 0 // 0：没有输入渐变点个数， 1：输入了渐变点个数
-//        //val gradientPointsNumber = 10 // 渐变点个数
-//        //val colorQuantileSelected = 1 // 0: 不设置分位数， 1：用户自定义
-//        //val colorQuantile: Array[Double] = (0 to 100).map(_ * 0.01).toArray // 用户自定义颜色分位数
-//        val grayScaleRange: Array[Double] = Array(-40, 200) // 用户输入的渲染灰度范围
-//        var fallbackColor = Array(0,0,0,0) // 用于填充超过范围的颜色
-//        val noDataColor = Array(0,0,0,0) // 用于填充无数据的颜色
+    //        //val gradientPointsSelected = 0 // 0：没有输入渐变点个数， 1：输入了渐变点个数
+    //        //val gradientPointsNumber = 10 // 渐变点个数
+    //        //val colorQuantileSelected = 1 // 0: 不设置分位数， 1：用户自定义
+    //        //val colorQuantile: Array[Double] = (0 to 100).map(_ * 0.01).toArray // 用户自定义颜色分位数
+    //        val grayScaleRange: Array[Double] = Array(-40, 200) // 用户输入的渲染灰度范围
+    var fallbackColor = Array(0, 0, 0, 0) // 用于填充超过范围的颜色
+    val noDataColor = Array(0, 0, 0, 0) // 用于填充无数据的颜色
 
 
     // 色带, 预设值：HeatmapBlueToYellowToRed
@@ -898,8 +895,8 @@ class RenenderPNGController {
     var colorMap: ColorMap = null
     var png: Png = null
     // 灰度最大最小值（全局）
-    var max: Double = grayScaleRange(1)
-    var min: Double = grayScaleRange(0)
+    var max: Double = grayScaleMax
+    var min: Double = grayScaleMin
     // 灰度最大最小值差值
     var diff: Double = max - min
 
