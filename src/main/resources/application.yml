@@ -20,3 +20,7 @@ spring:
     password: 'ypfamily608'
     port: 6379
 
+python:
+  execute-sh: /home/geocube/oge/oge-server/python-server/ogescript_execute.sh
+  store-dir: /home/geocube/oge/oge-server/python-server/python-script/
+
