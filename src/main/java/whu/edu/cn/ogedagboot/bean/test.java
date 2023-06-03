@@ -2,9 +2,12 @@ package whu.edu.cn.ogedagboot.bean;
 
 import java.io.*;
 
+
 public class test {
     public static void main(String[] args) {
         //读取output.txt
+
+
         File file = new File("src/main/java/whu/edu/cn/ogedagboot/bean/json.json");
         BufferedReader br = null;
         try {
@@ -23,5 +26,7 @@ public class test {
             }
         }
         System.out.println("st = " + st);
+
+        //
     }
 }

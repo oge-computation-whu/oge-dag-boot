@@ -65,7 +65,7 @@ public class LivyUtil {
             body.put("kind", "spark");
             body.put("executorCores", 8);
             body.put("executorMemory", "3g");
-            String[] str = {"local:/home/geocube/oge/oge-server/dag-boot/dependency/oge-computation_ogc_on_the_fly.jar"};
+            String[] str = {"local:/home/geocube/oge/oge-server/dag-boot/dependency/oge-computation_ogc.jar"};
             body.put("jars", str);
             JSONObject bodyChildren = new JSONObject();
             bodyChildren.put("spark.driver.extraClassPath", "local:/home/geocube/spark/jars/*");
@@ -136,7 +136,7 @@ public class LivyUtil {
                 body.put("kind", "spark");
                 body.put("executorCores", 8);
                 body.put("executorMemory", "3g");
-                String[] str = {"local:/home/geocube/oge/oge-server/dag-boot/dependency/oge-computation_ogc_on_the_fly.jar"};
+                String[] str = {"local:/home/geocube/oge/oge-server/dag-boot/dependency/oge-computation_ogc.jar"};
                 body.put("jars", str);
                 JSONObject bodyChildren = new JSONObject();
                 bodyChildren.put("spark.driver.extraClassPath", "local:/home/geocube/spark/jars/*");
@@ -205,20 +205,11 @@ public class LivyUtil {
         System.out.println(curWorkID);
 
 
-
-
-
-
-
-
-
-        if (!(CallbackController.outJsonsOfTMS.containsKey(curWorkID))){
+        if (!(CallbackController.outJsonsOfTMS.containsKey(curWorkID))) {
             throw new RuntimeException("获取 outJson 失败！！");
         }
         // 返回 outJson,也就是当前工作ID对应的ogc计算结果，原out.txt
         return CallbackController.outJsonsOfTMS.remove(curWorkID);
-
-
 
 
 //        //读取output.txt

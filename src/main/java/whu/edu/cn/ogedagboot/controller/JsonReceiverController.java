@@ -7,25 +7,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import scalaj.http.Http;
 import whu.edu.cn.ogedagboot.bean.WebSocket;
 import whu.edu.cn.ogedagboot.util.BuildStrUtil;
 import whu.edu.cn.ogedagboot.util.LivyUtil;
 import whu.edu.cn.ogedagboot.util.ShUtil;
 import whu.edu.cn.ogedagboot.util.SystemConstants;
-
 import javax.servlet.http.HttpSession;
 import java.io.*;
-
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static whu.edu.cn.ogedagboot.util.LivyUtil.livyTrigger;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.runCmd;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.versouSshUtil;
-import static whu.edu.cn.ogedagboot.util.SparkLauncherUtil.sparkSubmitTrigger;
 import static whu.edu.cn.ogedagboot.util.SparkLauncherUtil.sparkSubmitTriggerBatch;
 
 
@@ -48,23 +42,30 @@ public class JsonReceiverController {
     @PostMapping("/saveDagJson")
     public void saveDagJson(@RequestBody String params, HttpSession httpSession) {
 
-
-
         JSONObject paramsObject = JSONObject.parseObject(params);
         // 取出dag的
         String ogeDagJson = paramsObject.getString("dag");
-
         // 写入session
         httpSession.setAttribute("OGE_DAG_JSON", ogeDagJson);
-
         // 看下是不是
         System.out.println(ogeDagJson);
 
+        // 取出各个 Render 参数 , 并存入 session
+        JSONObject renderParamsObject = JSONObject.parseObject(ogeDagJson).getJSONObject("0").getJSONObject("functionInvocationValue").getJSONObject("arguments");
+        // 系统色带类型
+        String systemColorRamp = renderParamsObject.getJSONObject("palette").getString("constantValue");
+        httpSession.setAttribute("systemColorRamp", systemColorRamp);
+        // 用户输入的渲染灰度最大值
+        int grayScaleMax = renderParamsObject.getJSONObject("max").getIntValue("constantValue");
+        httpSession.setAttribute("grayScaleMax", grayScaleMax);
+        // 用户输入的渲染灰度最小值
+        int grayScaleMin = renderParamsObject.getJSONObject("min").getIntValue("constantValue");
+        httpSession.setAttribute("grayScaleMin", grayScaleMin);
 
         // 生成原始业务ID，就是用户点击run之后的整个业务
         long timeMillis = System.currentTimeMillis();
         String originTaskID = SystemConstants.ORIGIN_TASK_PREFIX + timeMillis;
-        httpSession.setAttribute("ORIGIN_TASK_ID",originTaskID);
+        httpSession.setAttribute("ORIGIN_TASK_ID", originTaskID);
 
         String spaceParam = "None";
         if (paramsObject.containsKey("spaceParams")) {
@@ -100,38 +101,12 @@ public class JsonReceiverController {
             return "Error";
         }
 
-
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagJsonStr);
         String originTaskId = (String) httpSession.getAttribute("ORIGIN_TASK_ID");
 
         return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson),originTaskId);
 
-
-//        Jedis jedis = jedisPool.getResource();
-//        if (jedis.exists("ogeDag")) {
-//            String ogeDagStr = jedis.get("ogeDag");
-//            JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-//            String[] spatialRangeList = spatialRange.split(",");
-//            ArrayList<Float> spatialRangeFloat = new ArrayList<>();
-//            for (String s : spatialRangeList) {
-//                spatialRangeFloat.add(Float.parseFloat(s));
-//            }
-//            JSONObject mapObject = new JSONObject();
-//            mapObject.put("level", level);
-//            mapObject.put("spatialRange", spatialRangeFloat);
-//            ogeDagJson.put("map", mapObject);
-//            ogeDagJson.put("oorB", "0");
-//            String paramStr = ogeDagJson.toJSONString();
-//            jedis.close();
-//            return livyTrigger(paramStr);
-//        } else {
-//            jedis.close();
-//            return "Error";
-//        }
-
-
     }
-
 
     @PostMapping("/runDagJsonBatch")
     public String runDagJsonBatch() {
@@ -146,130 +121,6 @@ public class JsonReceiverController {
         } else {
             jedis.close();
             return "Error";
-        }
-    }
-
-    @PostMapping("/testDagJson")
-    public String testDagJson(@RequestParam("level") int level, @RequestParam("spatialRange") String spatialRange) {
-        //读取output.txt
-        File file = new File("/home/geocube/oge/oge-server/dag-boot/json.json");
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(file));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        String ogeDagStr;
-        while (true) {
-            try {
-                assert br != null;
-                if (((ogeDagStr = br.readLine()) != null)) {
-                    break;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-        String paramStr = BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson);
-        return sparkSubmitTrigger(paramStr);
-    }
-
-    @PostMapping("/postjsonstring")
-    public String postJson(@RequestBody String param) {
-        String jsonString = param;
-
-        File writeFile = new File("/home/geocube/oge/oge-server/dag-boot/testJson.json");
-        Writer writer = null;
-        try {
-            writer = new BufferedWriter(new FileWriter(writeFile));
-            writer.write(jsonString);
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            versouSshUtil("125.220.153.26", "geocube", "ypfamily608", 22);
-            String st = "/home/geocube/spark/bin/spark-submit --master spark://125.220.153.26:7077 --class whu.edu.cn.application.oge.Trigger --driver-memory 30G --executor-memory 10G --conf spark.driver.maxResultSize=4G /home/geocube/oge/oge-server/dag-boot/oge-computation.jar\n";
-            runCmd(st, "UTF-8");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        //读取output.txt
-        File file = new File("/home/geocube/oge/oge-server/dag-boot/output.txt");
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(file));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        String st;
-        while (true) {
-            try {
-                if (((st = br.readLine()) != null)) {
-                    break;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-//        try {
-//            System.out.println("st = " + st);
-//            webSocket.sendMessage(st);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-        return st;
-    }
-
-    @GetMapping("/getjsonstring")
-    public void getJson(@RequestBody String param) {
-        String jsonString = param;
-
-        File writeFile = new File("/home/geocube/oge/oge-server/dag-boot/testJson.json");
-        Writer writer = null;
-        try {
-            writer = new BufferedWriter(new FileWriter(writeFile));
-            writer.write(jsonString);
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            versouSshUtil("125.220.153.26", "geocube", "ypfamily608", 22);
-            String st = "/home/geocube/spark/bin/spark-submit --master spark://125.220.153.26:7077 --class whu.edu.cn.application.oge.Trigger --driver-memory 30G --executor-memory 10G --conf spark.driver.maxResultSize=4G /home/geocube/oge/oge-server/dag-boot/oge-computation.jar\n";
-            runCmd(st, "UTF-8");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-        //读取output.txt
-        File file = new File("/home/geocube/oge/oge-server/dag-boot/output.txt");
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(file));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        String st;
-        while (true) {
-            try {
-                if (((st = br.readLine()) != null)) {
-                    break;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        try {
-            System.out.println("st = " + st);
-            webSocket.sendMessage(st);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
@@ -369,12 +220,5 @@ public class JsonReceiverController {
         }
         log.info(dagObj.toJSONString());
         return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, dagObj), dagId);
-//        return null;
-//        JSONObject ogeDagJson = JSONObject.parseObject(dag);
-//        // 生成原始业务ID，就是用户点击run之后的整个业务
-//        long timeMillis = System.currentTimeMillis();
-//        String originTaskID = SystemConstants.ORIGIN_TASK_PREFIX + timeMillis;
-//        return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, dagObj), dagId);
     }
-
 }
