@@ -27,8 +27,7 @@ public class JedisConfig {
         jedisPoolConfig.setMaxTotal(8);
         jedisPoolConfig.setMaxIdle(8);
         jedisPoolConfig.setMinIdle(1);
-        JedisPool jedisPool=new JedisPool(jedisPoolConfig,host,port,2000,password);
-        return jedisPool;
+        return new JedisPool(jedisPoolConfig,host,port,2000,password);
     }
 
     public int getDatabase() {

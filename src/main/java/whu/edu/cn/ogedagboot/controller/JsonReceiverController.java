@@ -7,11 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import whu.edu.cn.ogedagboot.RequestBody.OGEScriptExecuteBody;
 import whu.edu.cn.ogedagboot.bean.WebSocket;
-import whu.edu.cn.ogedagboot.util.BuildStrUtil;
-import whu.edu.cn.ogedagboot.util.LivyUtil;
-import whu.edu.cn.ogedagboot.util.ShUtil;
-import whu.edu.cn.ogedagboot.util.SystemConstants;
+import whu.edu.cn.ogedagboot.util.*;
+
 import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.util.HashMap;
@@ -35,6 +34,9 @@ public class JsonReceiverController {
 
     @Autowired
     private JedisPool jedisPool;
+
+    @Autowired
+    private RedisUtil redisUtil;
 
     @Autowired
     private ShUtil shUtil;
@@ -174,14 +176,13 @@ public class JsonReceiverController {
 
     /**
      * execute the code of oge script and return the dag result
-     * @param code the code of OGEScript
-     * @param userId the user id
-     * @param session httpsession session 存储一个键值对(dagId, {"dag":"", "layerName": ""})
+     * @param ogeScriptExecuteBody the request body
      * @return jsonObject { spaceParams: {}, dags:{"layerName" : "dagId"} }
      */
     @PostMapping("/executeCode")
-    public JSONObject executeOGEScript(@RequestParam("code") String code, @RequestParam("userId") String userId,
-                                       HttpSession session){
+    public JSONObject executeOGEScript(@RequestBody OGEScriptExecuteBody ogeScriptExecuteBody){
+        String code = ogeScriptExecuteBody.getCode();
+        String userId = ogeScriptExecuteBody.getUserId();
         // 时间戳
         long timeMillis = System.currentTimeMillis();
         JSONObject dagObj = shUtil.executeOGEScript(code);
@@ -189,15 +190,15 @@ public class JsonReceiverController {
         JSONObject spaceParamsObj = dagObj.getJSONObject("spaceParams");
         JSONObject resultObj = new JSONObject();
         JSONObject dagsObj = new JSONObject();
-        Map<String, JSONObject> dagMap = new HashMap<>();
+//        Map<String, JSONObject> dagMap = new HashMap<>();
         for(int i=0; i < dagArray.size(); i++){
             String dagId = userId + "_" + timeMillis + "_" + i;
             dagsObj.put(dagArray.getJSONObject(i).getString("layerName"), dagId);
-            dagMap.put(dagId, dagArray.getJSONObject(i));
+            redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 60* 5);
+//            dagMap.put(dagId, dagArray.getJSONObject(i));
         }
         resultObj.put("spaceParams", spaceParamsObj);
         resultObj.put("dags", dagsObj);
-        session.setAttribute("dagMap", dagMap);
         return resultObj;
     }
 
@@ -210,10 +211,14 @@ public class JsonReceiverController {
      */
     @PostMapping("/executeDag")
     public String executeDag(@RequestParam("level") int level,
-                             @RequestParam("spatialRange") String spatialRange, @RequestParam("dagId") String dagId,
-                             HttpSession session) {
-        Map<String, JSONObject> dagMap = (Map<String, JSONObject>) session.getAttribute("dagMap");
-        JSONObject dagWithNameObj = dagMap.get(dagId);
+                             @RequestParam("spatialRange") String spatialRange, @RequestParam("dagId") String dagId) {
+        String dagWithNameStr = redisUtil.getValueByKey(dagId);
+        log.info("dag："+ dagWithNameStr);
+        if(dagWithNameStr == null){
+            log.warn("未找到" + dagId + "对应的dag");
+            return null;
+        }
+        JSONObject dagWithNameObj =JSONObject.parseObject(dagWithNameStr);
         JSONObject dagObj = JSONObject.parseObject(dagWithNameObj.getString("dag"));
         if(dagWithNameObj.containsKey("layerName") && dagWithNameObj.getString("layerName") != null){
             dagObj.put("layerName", dagWithNameObj.getString("layerName"));
