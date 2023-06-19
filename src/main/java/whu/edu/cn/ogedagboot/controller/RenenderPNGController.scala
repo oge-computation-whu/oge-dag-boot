@@ -1,12 +1,17 @@
 package whu.edu.cn.ogedagboot.controller
 
 
+
+import com.alibaba.fastjson.{JSON, JSONObject}
 import geotrellis.layer.SpatialKey
 import geotrellis.raster.render.{ColorMap, LessThanOrEqualTo, Png}
 import geotrellis.raster.{DoubleConstantNoDataCellType, Tile}
 import geotrellis.store.{AttributeStore, LayerId, ValueNotFoundError, ValueReader}
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.web.bind.annotation.{PathVariable, RequestMapping, ResponseBody, RestController}
+import org.springframework.web.bind.annotation.{PathVariable, RequestMapping, RequestParam, ResponseBody, RestController}
+import redis.clients.jedis.JedisPool
+import whu.edu.cn.ogedagboot.util.RedisUtil
 
 import javax.servlet.http.HttpSession
 
@@ -17,6 +22,13 @@ import javax.servlet.http.HttpSession
  */
 @RestController
 class RenenderPNGController {
+  @Autowired private val webSocket = null
+
+  @Autowired private val jedisPool:JedisPool = null
+
+  @Autowired private val redisUtil:RedisUtil = null
+
+  @Autowired private val shUtil = null
 
 
   /**
@@ -58,15 +70,52 @@ class RenenderPNGController {
    */
   @RequestMapping(value = Array("{layerId}/{zoom}/{x}/{y}.png"), produces = Array(MediaType.IMAGE_PNG_VALUE))
   @ResponseBody
-  def renderBean(@PathVariable layerId: String, @PathVariable zoom: Int, @PathVariable x: Int, @PathVariable y: Int, httpSession: HttpSession): Array[Byte] = {
+  def renderBean(@PathVariable layerId: String,
+                 @PathVariable zoom: Int,
+                 @PathVariable x: Int,
+                 @PathVariable y: Int,
+                 @RequestParam("dagId") dagId: String,
+                 httpSession: HttpSession): Array[Byte] = {
+
+
+    val dagWithNameStr: String = redisUtil.getValueByKey(dagId)
+    println("dag：" + dagWithNameStr)
+    if (dagWithNameStr == null) {
+      println("未找到" + dagId + "对应的dag")
+      return null
+    }
+
+    val dagWithNameObj: JSONObject = JSON.parseObject(dagWithNameStr)
+    val dagObj: JSONObject = JSON.parseObject(dagWithNameObj.getString("dag"))
+
+    val renderParamsObject: JSONObject = dagObj
+      .getJSONObject("0")
+      .getJSONObject("functionInvocationValue")
+      .getJSONObject("arguments")
+
     // TODO 一个DAG对应一个layerId
     // TODO 如何从DAG拿到Min、Max、色带
-    val systemColorRamp = httpSession.getAttribute("systemColorRamp").toString
+    // 系统色带类型
+    val systemColorRamp: String = renderParamsObject
+      .getJSONObject("palette")
+      .getString("constantValue")
     println("systemColorRamp: " + systemColorRamp)
 
     // 用户输入的渲染灰度范围
-    val grayScaleMax = httpSession.getAttribute("grayScaleMax").toString.toDouble
-    val grayScaleMin = httpSession.getAttribute("grayScaleMin").toString.toDouble
+    val grayScaleMax: Double = renderParamsObject
+      .getJSONObject("max")
+      .getIntValue("constantValue")
+      .toDouble
+    // 用户输入的渲染灰度最小值
+    val grayScaleMin: Double = renderParamsObject
+      .getJSONObject("min")
+      .getIntValue("constantValue")
+      .toDouble
+
+
+
+
+
 
     val colorType = 1 // 表示传入的颜色值的表达方式 —— 0:RGBA , 1: 0x16进制
     val rgbaValues: Array[Array[Int]] = Array(Array(255, 0, 0, 255), Array(0, 255, 0, 255)) // 用于存储RGBA型色带颜色值
