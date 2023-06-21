@@ -1,7 +1,7 @@
 server:
   port: 8085
   servlet:
-    context-path: /oge-dag
+    context-path: /oge-dag-22
   tomcat:
     relaxed-query-chars: [ '|','{','}','[',']' ]
     relaxed-path-chars: [ '|','{','}','[',']' ]
@@ -21,6 +21,8 @@ spring:
     port: 6379
 
 python:
-  execute-sh: /home/geocube/oge/oge-server/python-server/ogescript_execute.sh
-  store-dir: /home/geocube/oge/oge-server/python-server/python-script/
+#  execute-sh: /home/geocube/oge/oge-server/python-server/ogescript_execute.sh
+#  store-dir: /home/geocube/oge/oge-server/python-server/python-script/
+  execute-sh: /home/wkx/oge/sh/ogeScriptExecute.sh
+  store-dir: /home/wkx/oge/python_tools/oge-script/
 

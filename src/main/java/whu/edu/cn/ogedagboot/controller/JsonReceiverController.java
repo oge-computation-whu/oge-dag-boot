@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import whu.edu.cn.ogedagboot.RequestBody.OGEScriptExecuteBody;
+import whu.edu.cn.ogedagboot.ResponseBody.OGEScriptExecuteResponse;
 import whu.edu.cn.ogedagboot.bean.WebSocket;
 import whu.edu.cn.ogedagboot.util.*;
 
@@ -187,20 +188,19 @@ public class JsonReceiverController {
         String userId = ogeScriptExecuteBody.getUserId();
         // 时间戳
         long timeMillis = System.currentTimeMillis();
-        JSONObject dagObj = shUtil.executeOGEScript(code);
-        JSONArray dagArray = dagObj.getJSONArray("dagList");
-        JSONObject spaceParamsObj = dagObj.getJSONObject("spaceParams");
+        OGEScriptExecuteResponse ogeScriptExecuteResponse = shUtil.executeOGEScript(code);
+        JSONArray dagArray = ogeScriptExecuteResponse.getDagList();
+        JSONObject spaceParamsObj = ogeScriptExecuteResponse.getSpaceParams();
         JSONObject resultObj = new JSONObject();
         JSONObject dagsObj = new JSONObject();
-//        Map<String, JSONObject> dagMap = new HashMap<>();
         for(int i=0; i < dagArray.size(); i++){
             String dagId = userId + "_" + timeMillis + "_" + i;
             dagsObj.put(dagArray.getJSONObject(i).getString("layerName"), dagId);
             redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 60* 5);
-//            dagMap.put(dagId, dagArray.getJSONObject(i));
         }
         resultObj.put("spaceParams", spaceParamsObj);
         resultObj.put("dags", dagsObj);
+        resultObj.put("log", ogeScriptExecuteResponse.getLog());
         return resultObj;
     }
 
