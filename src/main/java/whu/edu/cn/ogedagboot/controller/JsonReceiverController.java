@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import whu.edu.cn.ogedagboot.RequestBody.OGEScriptExecuteBody;
+import whu.edu.cn.ogedagboot.ResponseBody.OGEScriptExecuteResponse;
 import whu.edu.cn.ogedagboot.bean.WebSocket;
 import whu.edu.cn.ogedagboot.util.*;
 
@@ -106,7 +107,7 @@ public class JsonReceiverController {
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagJsonStr);
         String originTaskId = (String) httpSession.getAttribute("ORIGIN_TASK_ID");
 
-        return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson), originTaskId);
+        return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson),originTaskId);
 
     }
 
@@ -176,55 +177,52 @@ public class JsonReceiverController {
 
     /**
      * execute the code of oge script and return the dag result
-     *
      * @param ogeScriptExecuteBody the request body
      * @return jsonObject { spaceParams: {}, dags:{"layerName" : "dagId"} }
      */
 
 
     @PostMapping("/executeCode")
-    public JSONObject executeOGEScript(@RequestBody OGEScriptExecuteBody ogeScriptExecuteBody) {
+    public JSONObject executeOGEScript(@RequestBody OGEScriptExecuteBody ogeScriptExecuteBody){
         String code = ogeScriptExecuteBody.getCode();
         String userId = ogeScriptExecuteBody.getUserId();
         // 时间戳
         long timeMillis = System.currentTimeMillis();
-        JSONObject dagObj = shUtil.executeOGEScript(code);
-        JSONArray dagArray = dagObj.getJSONArray("dagList");
-        JSONObject spaceParamsObj = dagObj.getJSONObject("spaceParams");
+        OGEScriptExecuteResponse ogeScriptExecuteResponse = shUtil.executeOGEScript(code);
+        JSONArray dagArray = ogeScriptExecuteResponse.getDagList();
+        JSONObject spaceParamsObj = ogeScriptExecuteResponse.getSpaceParams();
         JSONObject resultObj = new JSONObject();
         JSONObject dagsObj = new JSONObject();
-//        Map<String, JSONObject> dagMap = new HashMap<>();
-        for (int i = 0; i < dagArray.size(); i++) {
+        for(int i=0; i < dagArray.size(); i++){
             String dagId = userId + "_" + timeMillis + "_" + i;
             dagsObj.put(dagArray.getJSONObject(i).getString("layerName"), dagId);
-            redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 60 * 5);
-//            dagMap.put(dagId, dagArray.getJSONObject(i));
+            redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 60* 5);
         }
         resultObj.put("spaceParams", spaceParamsObj);
         resultObj.put("dags", dagsObj);
+        resultObj.put("log", ogeScriptExecuteResponse.getLog());
         return resultObj;
     }
 
     /**
      * receive the dag and spatial geom and execute the dag
-     *
-     * @param level:int           map level
+     * @param level:int map level
      * @param spatialRange:String spatial range
-     * @param dagId:String        the Id of dag
+     * @param dagId:String the Id of dag
      * @return String the url of tms
      */
     @PostMapping("/executeDag")
     public String executeDag(@RequestParam("level") int level,
                              @RequestParam("spatialRange") String spatialRange, @RequestParam("dagId") String dagId) {
         String dagWithNameStr = redisUtil.getValueByKey(dagId);
-        log.info("dag：" + dagWithNameStr);
-        if (dagWithNameStr == null) {
+        log.info("dag："+ dagWithNameStr);
+        if(dagWithNameStr == null){
             log.warn("未找到" + dagId + "对应的dag");
             return null;
         }
-        JSONObject dagWithNameObj = JSONObject.parseObject(dagWithNameStr);
+        JSONObject dagWithNameObj =JSONObject.parseObject(dagWithNameStr);
         JSONObject dagObj = JSONObject.parseObject(dagWithNameObj.getString("dag"));
-        if (dagWithNameObj.containsKey("layerName") && dagWithNameObj.getString("layerName") != null) {
+        if(dagWithNameObj.containsKey("layerName") && dagWithNameObj.getString("layerName") != null){
             dagObj.put("layerName", dagWithNameObj.getString("layerName"));
         }
         log.info(dagObj.toJSONString());
