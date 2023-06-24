@@ -1,6 +1,7 @@
 package whu.edu.cn.ogedagboot.controller;
 
 
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -21,11 +22,10 @@ public class CallbackController {
      * 实现 oge_computation_ogc 将 url 传递给 springboot 项目
      *
      * @param outJson TMS 服务输出的json，主要内容是前端获取结果的url（下载链接）
-     * @param workID  单次工作标识，某次on-the-fly请求的唯一标识
      */
     @PostMapping("/deliverUrl")
-    public void deliverUrl(@RequestBody String outJson, @RequestHeader(value = "workID") String workID) {
-        outJsonsOfTMS.put(workID, outJson);
+    public void deliverUrl(@RequestBody String outJson) {
+        outJsonsOfTMS.put(JSONObject.parseObject(outJson).getString("workID"), JSONObject.parseObject(outJson).getJSONObject("json").toJSONString());
         System.out.println("outJsonsOfTMS = " + outJsonsOfTMS);
         System.out.println("url = " + outJson);
     }
