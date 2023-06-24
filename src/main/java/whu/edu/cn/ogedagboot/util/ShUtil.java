@@ -133,8 +133,8 @@ public class ShUtil {
         Matcher matcher = pattern.matcher(input);
         while (matcher.find()) {
             matches.add(matcher.group(1));
-            input = matcher.replaceAll("");
         }
+        input = matcher.replaceAll("");
         matchResult.setMatchList(matches);
         matchResult.setModifiedStr(input);
         return matchResult;
