@@ -25,7 +25,7 @@ public class BuildStrUtil {
         mapObject.put("level", level);
         mapObject.put("spatialRange", spatialRangeFloat);
         ogeDagJson.put("map", mapObject);
-        ogeDagJson.put("oorB", "0");
+        ogeDagJson.put("isBatch", "0");
         return ogeDagJson.toJSONString();
     }
 

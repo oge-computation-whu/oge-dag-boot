@@ -3,17 +3,15 @@ package whu.edu.cn.ogedagboot.util;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import scala.annotation.meta.param;
 import whu.edu.cn.ogedagboot.controller.CallbackController;
 
-import java.io.*;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Objects;
 
 import static whu.edu.cn.ogedagboot.util.GlobalConstantUtil.*;
 import static whu.edu.cn.ogedagboot.util.HttpRequestUtil.*;
-import static whu.edu.cn.ogedagboot.util.SSHClientUtil.*;
+import static whu.edu.cn.ogedagboot.util.SSHClientUtil.runCmd;
+import static whu.edu.cn.ogedagboot.util.SSHClientUtil.versouSshUtil;
 
 public class LivyUtil {
     public static void main(String[] args) {
@@ -51,11 +49,11 @@ public class LivyUtil {
         for (int i = 0; i < LIVY_SESSION_NUM; i++) {
             JSONObject body = new JSONObject();
             body.put("kind", "spark");
-            body.put("driverCores", 1);
+            body.put("driverCores", 2);
             body.put("driverMemory", "2g");
-            body.put("executorCores", 4);
+            body.put("executorCores", 8);
             body.put("executorMemory", "8g");
-            body.put("numExecutors", 2);
+            body.put("numExecutors", 1);
             String[] str = {"local:/mnt/storage/dag-boot/oge-computation_ogc.jar"};
             body.put("jars", str);
             JSONObject bodyChildren = new JSONObject();
@@ -94,11 +92,11 @@ public class LivyUtil {
             for (int i = 0; i < sessionNumExpected - sessionNum; i++) {
                 JSONObject body = new JSONObject();
                 body.put("kind", "spark");
-                //body.put("driverCores", 1);
-                //body.put("driverMemory", "1536m");
-                body.put("executorCores", 4);
+                body.put("driverCores", 2);
+                body.put("driverMemory", "2g");
+                body.put("executorCores", 8);
                 body.put("executorMemory", "8g");
-                body.put("numExecutors", 2);
+                body.put("numExecutors", 1);
                 String[] str = {"local:/mnt/storage/dag-boot/oge-computation_ogc.jar"};
                 body.put("jars", str);
                 JSONObject bodyChildren = new JSONObject();
@@ -124,7 +122,7 @@ public class LivyUtil {
             }
         }
 
-        ////如果没有一个session是闲置的，则取消第一个session正在执行的任务
+        //// 如果没有一个session是闲置的，则取消第一个session正在执行的任务
         //if (sessionIdAvailable == -1) {
         //    String statementsInfoString = sendGet(baseUrl + "/sessions/" + sessionIdList.get(0) + "/statements");
         //    JSONObject statementsInfoJson = JSON.parseObject(statementsInfoString);
@@ -148,7 +146,7 @@ public class LivyUtil {
             workTaskJSON = BuildStrUtil.convertStr(workTaskJSON);
             // 提交任务给session
             JSONObject body = new JSONObject();
-            String code = "whu.edu.cn.application.oge.Trigger.runMain(sc," +
+            String code = "whu.edu.cn.trigger.Trigger.runMain(sc," +
                     "\"" + workTaskJSON /* modis.json */ + "\"," +
                     "\"" + originTaskID /* 第一次点run标识的业务 */ + "\"" +
                     ")";

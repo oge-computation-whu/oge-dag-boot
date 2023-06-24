@@ -117,7 +117,7 @@ public class JsonReceiverController {
         if (jedis.exists("ogeDag")) {
             String ogeDagStr = jedis.get("ogeDag");
             JSONObject ogeDagJson = JSONObject.parseObject(ogeDagStr);
-            ogeDagJson.put("oorB", "1");
+            ogeDagJson.put("isBatch", "1");
             String paramStr = ogeDagJson.toJSONString();
             jedis.close();
             return sparkSubmitTriggerBatch(paramStr);
