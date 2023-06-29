@@ -6,6 +6,8 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import whu.edu.cn.ogedagboot.ResponseBody.OGEScriptExecuteResponse;
+import whu.edu.cn.ogedagboot.util.entity.MatchResult;
 
 import java.io.*;
 import java.net.URLDecoder;
@@ -71,6 +73,7 @@ public class ShUtil {
             BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
             while ((line = reader.readLine()) != null) {
                 output.append(line);
+                output.append("\n");
                 log.info(line);
             }
             p.waitFor();
@@ -88,28 +91,33 @@ public class ShUtil {
      * @param code the code of python file
      * @return DAG params
      */
-    public JSONObject executeOGEScript(String code){
+    public OGEScriptExecuteResponse executeOGEScript(String code){
         String pythonFilePath = formPythonFile(code);
         //String output = code;
         String output = callShellForValue((new ProcessBuilder("bash", executeSh, pythonFilePath)));
         log.info(output);
         // get dagList, maybe many dags
-        List<String> dagList = extractValueBetweenAngleBrackets(output, Pattern.compile("dag=<<(.*?)>>"));
+        MatchResult matchResult1 = extractValueBetweenAngleBrackets(output, Pattern.compile("dag=<<(.*?)>>\n"));
+        List<String> dagList = matchResult1.getMatchList();
+        output = matchResult1.getModifiedStr();
         JSONArray dagArray = new JSONArray();
         for(String dag : dagList){
             dagArray.add(JSONObject.parseObject(dag));
         }
         // get spaceParamsList, only get last one
-        List<String> spaceParamsList = extractValueBetweenAngleBrackets(output, Pattern.compile("spaceParams=<<(.*?)>>"));
+        MatchResult matchResult2 = extractValueBetweenAngleBrackets(output, Pattern.compile("spaceParams=<<(.*?)>>\n"));
+        List<String> spaceParamsList = matchResult2.getMatchList();
+        output = matchResult2.getModifiedStr();
         JSONObject spaceObj = new JSONObject();
         // if the length of spaceParamsList don't equal 0
         if(spaceParamsList.size() != 0){
             spaceObj = JSONObject.parseObject(spaceParamsList.get(spaceParamsList.size() - 1));
         }
-        JSONObject resultObj = new JSONObject();
-        resultObj.put("spaceParams", spaceObj);
-        resultObj.put("dagList", dagArray);
-        return resultObj;
+        OGEScriptExecuteResponse ogeScriptExecuteResponse = new OGEScriptExecuteResponse();
+        ogeScriptExecuteResponse.setLog(output);
+        ogeScriptExecuteResponse.setSpaceParams(spaceObj);
+        ogeScriptExecuteResponse.setDagList(dagArray);
+        return ogeScriptExecuteResponse;
     }
 
 
@@ -119,14 +127,17 @@ public class ShUtil {
      * @param pattern the match pattern
      * @return extracted value
      */
-    public List<String> extractValueBetweenAngleBrackets(String input, Pattern pattern) {
+    public MatchResult extractValueBetweenAngleBrackets(String input, Pattern pattern) {
+        MatchResult matchResult = new MatchResult();
         List<String> matches = new ArrayList<>();
-//        Pattern pattern = Pattern.compile("<<(.*?)>>");
         Matcher matcher = pattern.matcher(input);
-       while (matcher.find()) {
+        while (matcher.find()) {
             matches.add(matcher.group(1));
         }
-        return matches;
+        input = matcher.replaceAll("");
+        matchResult.setMatchList(matches);
+        matchResult.setModifiedStr(input);
+        return matchResult;
     }
 
     /**
@@ -154,26 +165,28 @@ public class ShUtil {
     }
 
     public static void main(String [] args) throws IOException {
-//        ShUtil shUtil = new ShUtil();
-        try {
-//            String codeStr = "import oge.mapclient\\n# 初始化\\noge.initialize()\\nservice = oge.Service.initialize()\\n# Modis数据集获取\\nmodisCollection1 = service.getCoverageCollection(productID=\"MOD13Q1_061\", bbox=[73.62, 18.19, 134.7601467382, 53.54],\\n                                                    datetime=[\"2022-03-06 00:00:00\", \"2022-03-06 00:00:00\"])\\nmodisCollection2 = modisCollection1.subCollection(\\n    filter=oge.Filter([oge.Filter.equals(\"crs\", \"EPSG:4326\"), oge.Filter.equals(\"measurementName\", \"NDVI\")]))\\n# 二值化\\nbinary_Collection = service.getProcess(\"CoverageCollection.binarization\").execute(modisCollection2, 220)\\n# 地图可视化\\nvis_params = {'min': 0, 'max': 255, 'method': \"timeseries\", 'palette': \"green\"}\\noge.mapclient.centerMap(113.5, 24.5, 5)\\nbinary_Collection.styles(vis_params).getMap()\\n   ";
-//            String decodeStr = URLDecoder.decode("import oge.mapclient\\n# 初始化\\noge.initialize()\\nservice = oge.Service.initialize()\\n# Modis数据集获取\\nmodisCollection1 = service.getCoverageCollection(productID=\"MOD13Q1_061\", bbox=[73.62, 18.19, 134.7601467382, 53.54],\\n                                                    datetime=[\"2022-03-06 00:00:00\", \"2022-03-06 00:00:00\"])\\nmodisCollection2 = modisCollection1.subCollection(\\n    filter=oge.Filter([oge.Filter.equals(\"crs\", \"EPSG:4326\"), oge.Filter.equals(\"measurementName\", \"NDVI\")]))\\n# 二值化\\nbinary_Collection = service.getProcess(\"CoverageCollection.binarization\").execute(modisCollection2, 220)\\n# 地图可视化\\nvis_params = {'min': 0, 'max': 255, 'method': \"timeseries\", 'palette': \"green\"}\\noge.mapclient.centerMap(113.5, 24.5, 5)\\nbinary_Collection.styles(vis_params).getMap()\\n   ", StandardCharsets.UTF_8.toString());
-            String codeStr = "import%20oge.mapclient%5Cn%23%20%E5%88%9D%E5%A7%8B%E5%8C%96%5Cnoge.initialize()%5Cnservice%20%3D%20oge.Service.initialize()%5Cn%23%20Modis%E6%95%B0%E6%8D%AE%E9%9B%86%E8%8E%B7%E5%8F%96%5CnmodisCollection1%20%3D%20service.getCoverageCollection(productID%3D%22MOD13Q1_061%22%2C%20bbox%3D%5B73.62%2C%2018.19%2C%20134.7601467382%2C%2053.54%5D%2C%5Cn%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20datetime%3D%5B%222022-03-06%2000%3A00%3A00%22%2C%20%222022-03-06%2000%3A00%3A00%22%5D)%5CnmodisCollection2%20%3D%20modisCollection1.subCollection(%5Cn%20%20%20%20filter%3Doge.Filter(%5Boge.Filter.equals(%22crs%22%2C%20%22EPSG%3A4326%22)%2C%20oge.Filter.equals(%22measurementName%22%2C%20%22NDVI%22)%5D))%5Cn%23%20%E4%BA%8C%E5%80%BC%E5%8C%96%5Cnbinary_Collection%20%3D%20service.getProcess(%22CoverageCollection.binarization%22).execute(modisCollection2%2C%20220)%5Cn%23%20%E5%9C%B0%E5%9B%BE%E5%8F%AF%E8%A7%86%E5%8C%96%5Cnvis_params%20%3D%20%7B'min'%3A%200%2C%20'max'%3A%20255%2C%20'method'%3A%20%22timeseries%22%2C%20'palette'%3A%20%22green%22%7D%5Cnoge.mapclient.centerMap(113.5%2C%2024.5%2C%205)%5Cnbinary_Collection.styles(vis_params).getMap()%5Cn%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20";
-            String decodedCode = URLDecoder.decode(codeStr, "UTF-8");
-//            String code = decodedCode.replace("%0A", "\n");
-//            String replacedStr = codeStr.replaceAll("\n", System.lineSeparator());
-            String pythonFilePath = "E:/LaoK/data2/test.py";
-//            System.out.println(code);
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(pythonFilePath))) {
-                writer.write(decodedCode.replaceAll("\n", "\r\n"));
-            }
-        } catch (UnsupportedEncodingException ex){
-            throw new RuntimeException(ex.getCause());
-        }
+        ShUtil shUtil = new ShUtil();
+//        try {
+////            String codeStr = "import oge.mapclient\\n# 初始化\\noge.initialize()\\nservice = oge.Service.initialize()\\n# Modis数据集获取\\nmodisCollection1 = service.getCoverageCollection(productID=\"MOD13Q1_061\", bbox=[73.62, 18.19, 134.7601467382, 53.54],\\n                                                    datetime=[\"2022-03-06 00:00:00\", \"2022-03-06 00:00:00\"])\\nmodisCollection2 = modisCollection1.subCollection(\\n    filter=oge.Filter([oge.Filter.equals(\"crs\", \"EPSG:4326\"), oge.Filter.equals(\"measurementName\", \"NDVI\")]))\\n# 二值化\\nbinary_Collection = service.getProcess(\"CoverageCollection.binarization\").execute(modisCollection2, 220)\\n# 地图可视化\\nvis_params = {'min': 0, 'max': 255, 'method': \"timeseries\", 'palette': \"green\"}\\noge.mapclient.centerMap(113.5, 24.5, 5)\\nbinary_Collection.styles(vis_params).getMap()\\n   ";
+////            String decodeStr = URLDecoder.decode("import oge.mapclient\\n# 初始化\\noge.initialize()\\nservice = oge.Service.initialize()\\n# Modis数据集获取\\nmodisCollection1 = service.getCoverageCollection(productID=\"MOD13Q1_061\", bbox=[73.62, 18.19, 134.7601467382, 53.54],\\n                                                    datetime=[\"2022-03-06 00:00:00\", \"2022-03-06 00:00:00\"])\\nmodisCollection2 = modisCollection1.subCollection(\\n    filter=oge.Filter([oge.Filter.equals(\"crs\", \"EPSG:4326\"), oge.Filter.equals(\"measurementName\", \"NDVI\")]))\\n# 二值化\\nbinary_Collection = service.getProcess(\"CoverageCollection.binarization\").execute(modisCollection2, 220)\\n# 地图可视化\\nvis_params = {'min': 0, 'max': 255, 'method': \"timeseries\", 'palette': \"green\"}\\noge.mapclient.centerMap(113.5, 24.5, 5)\\nbinary_Collection.styles(vis_params).getMap()\\n   ", StandardCharsets.UTF_8.toString());
+//            String codeStr = "import%20oge.mapclient%5Cn%23%20%E5%88%9D%E5%A7%8B%E5%8C%96%5Cnoge.initialize()%5Cnservice%20%3D%20oge.Service.initialize()%5Cn%23%20Modis%E6%95%B0%E6%8D%AE%E9%9B%86%E8%8E%B7%E5%8F%96%5CnmodisCollection1%20%3D%20service.getCoverageCollection(productID%3D%22MOD13Q1_061%22%2C%20bbox%3D%5B73.62%2C%2018.19%2C%20134.7601467382%2C%2053.54%5D%2C%5Cn%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20datetime%3D%5B%222022-03-06%2000%3A00%3A00%22%2C%20%222022-03-06%2000%3A00%3A00%22%5D)%5CnmodisCollection2%20%3D%20modisCollection1.subCollection(%5Cn%20%20%20%20filter%3Doge.Filter(%5Boge.Filter.equals(%22crs%22%2C%20%22EPSG%3A4326%22)%2C%20oge.Filter.equals(%22measurementName%22%2C%20%22NDVI%22)%5D))%5Cn%23%20%E4%BA%8C%E5%80%BC%E5%8C%96%5Cnbinary_Collection%20%3D%20service.getProcess(%22CoverageCollection.binarization%22).execute(modisCollection2%2C%20220)%5Cn%23%20%E5%9C%B0%E5%9B%BE%E5%8F%AF%E8%A7%86%E5%8C%96%5Cnvis_params%20%3D%20%7B'min'%3A%200%2C%20'max'%3A%20255%2C%20'method'%3A%20%22timeseries%22%2C%20'palette'%3A%20%22green%22%7D%5Cnoge.mapclient.centerMap(113.5%2C%2024.5%2C%205)%5Cnbinary_Collection.styles(vis_params).getMap()%5Cn%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20";
+//            String decodedCode = URLDecoder.decode(codeStr, "UTF-8");
+////            String code = decodedCode.replace("%0A", "\n");
+////            String replacedStr = codeStr.replaceAll("\n", System.lineSeparator());
+//            String pythonFilePath = "E:/LaoK/data2/test.py";
+////            System.out.println(code);
+//            try (BufferedWriter writer = new BufferedWriter(new FileWriter(pythonFilePath))) {
+//                writer.write(decodedCode.replaceAll("\n", "\r\n"));
+//            }
+//        } catch (UnsupportedEncodingException ex){
+//            throw new RuntimeException(ex.getCause());
+//        }
         // JSONObject resultObj = shUtil.executeOGEScript("spaceParams=<<{'lng': 101.2275, 'lat': 25.1425, 'zoom': 15}>>dag=<<{'dag': '{\"0\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.addStyles\", \"arguments\": {\"input\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.croplandDetection\", \"arguments\": {\"input\": {\"functionInvocationValue\": {\"functionName\": \"Service.getCoverage\", \"arguments\": {\"baseUrl\": {\"constantValue\": \"http://localhost\"}, \"coverageID\": {\"constantValue\": \"BJ2002F8CVI_00220211229C10_COG\"}}}}}}}, \"max\": {\"constantValue\": 1}, \"min\": {\"constantValue\": 0}}}}}', 'layerName': 'croplandDetection'}>>dag=<<{'dag': '{\"0\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.addStyles\", \"arguments\": {\"input\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.croplandDetection\", \"arguments\": {\"input\": {\"functionInvocationValue\": {\"functionName\": \"Service.getCoverage\", \"arguments\": {\"baseUrl\": {\"constantValue\": \"http://localhost\"}, \"coverageID\": {\"constantValue\": \"BJ2002F8CVI_00220211229C10_COG\"}}}}}}}, \"max\": {\"constantValue\": 1}, \"min\": {\"constantValue\": 0}}}}}', 'layerName': 'croplandDetection2'}>>\n");
         String a = "s";
-//        JSONObject resultObj = shUtil.executeOGEScript("spaceParams=<<{'lng': 101.2275, 'lat': 25.1425, 'zoom': 15}>>\n" +
-//                "dag=<<{'dag': '{\"0\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.addStyles\", \"arguments\": {\"input\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.croplandDetection\", \"arguments\": {\"input\": {\"functionInvocationValue\": {\"functionName\": \"Service.getCoverage\", \"arguments\": {\"baseUrl\": {\"constantValue\": \"http://localhost\"}, \"coverageID\": {\"constantValue\": \"BJ2002F8CVI_00220211229C10_COG\"}}}}}}}, \"max\": {\"constantValue\": 1}, \"min\": {\"constantValue\": 0}}}}}', 'layerName': 'croplandDetection'}>>\n");
-//        String a = "s";
+        OGEScriptExecuteResponse ogeScriptExecuteResponse = shUtil.executeOGEScript("hellow wkx \n spaceParams=<<{'lng': 101.2275, 'lat': 25.1425, 'zoom': 15}>>\n" +
+                "dag=<<{'dag': '{\"0\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.addStyles\", \"arguments\": {\"input\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.croplandDetection\", \"arguments\": {\"input\": {\"functionInvocationValue\": {\"functionName\": \"Service.getCoverage\", \"arguments\": {\"baseUrl\": {\"constantValue\": \"http://localhost\"}, \"coverageID\": {\"constantValue\": \"BJ2002F8CVI_00220211229C10_COG\"}}}}}}}, \"max\": {\"constantValue\": 1}, \"min\": {\"constantValue\": 0}}}}}', 'layerName': 'croplandDetection'}>>\n");
+       String log = ogeScriptExecuteResponse.getLog();
+        System.out.println(log);
+        // String a = "s";
     }
 }
