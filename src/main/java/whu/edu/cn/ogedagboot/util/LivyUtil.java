@@ -50,10 +50,10 @@ public class LivyUtil {
             JSONObject body = new JSONObject();
             body.put("kind", "spark");
             body.put("driverCores", 2);
-            body.put("driverMemory", "2g");
-            body.put("executorCores", 8);
-            body.put("executorMemory", "8g");
-            body.put("numExecutors", 1);
+            body.put("driverMemory", "1500m");
+            body.put("executorCores", 2);
+            body.put("executorMemory", "3g");
+            body.put("numExecutors", 5);
             String[] str = {"local:/mnt/storage/dag-boot/oge-computation_ogc.jar"};
             body.put("jars", str);
             JSONObject bodyChildren = new JSONObject();
