@@ -25,7 +25,8 @@ public class CallbackController {
      */
     @PostMapping("/deliverUrl")
     public void deliverUrl(@RequestBody String outJson) {
-        outJsonsOfTMS.put(JSONObject.parseObject(outJson).getString("workID"), JSONObject.parseObject(outJson).getJSONObject("json").toJSONString());
+        outJsonsOfTMS.put(JSONObject.parseObject(outJson).getString("workID"),
+                JSONObject.parseObject(outJson).getJSONObject("json").toJSONString());
         System.out.println("outJsonsOfTMS = " + outJsonsOfTMS);
         System.out.println("url = " + outJson);
     }
