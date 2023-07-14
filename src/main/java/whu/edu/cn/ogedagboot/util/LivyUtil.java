@@ -175,7 +175,11 @@ public class LivyUtil {
             }
             // 返回 outJson,也就是当前工作ID对应的ogc计算结果，原out.txt
             resultJsonObject = JSONObject.parseObject(CallbackController.outJsonsOfTMS.remove(originTaskID));
-            resultJsonObject.put("status", "success");
+            if (!resultJsonObject.containsKey("error")) {
+                resultJsonObject.put("status", "success");
+            }else {
+                resultJsonObject.put("status","error");
+            }
             return resultJsonObject.toJSONString();
         }
     }
