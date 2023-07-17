@@ -2,6 +2,8 @@ package whu.edu.cn.ogedagboot.controller;
 
 
 import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,6 +15,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class CallbackController {
+    private static final Logger log = LoggerFactory.getLogger(CallbackController.class);
 
     // 不同用户（或不同原始请求）下 TMS 服务输出的json
     public static final
@@ -56,6 +59,10 @@ public class CallbackController {
             } else {
                 noticeJsonMap.get(workID).add(notice);
             }
+
+            log.info(noticeJson);
+
+
         }
 
 
