@@ -25,25 +25,37 @@ public class SSEController {
     public SseEmitter runProcessNotice(@RequestParam("dagId") String dagId) {
         SseEmitter emitter = new SseEmitter();
 
+
         new Thread(() -> {
             try {
+
+                //TODO: 这里的死循环要修改，初步设想是添加一个结束标识及最大等待时间
+
+                long start = System.currentTimeMillis();
                 while (true) {
                     Thread.sleep(3000);
-                    if (CallbackController.noticeJsonMap.containsKey(dagId)) {
-                        String message = CallbackController.noticeJsonMap.get(dagId).poll();
-
-                        log.info("message = " + message);
-                        if (message != null) {
-
-                            log.info("not null");
-                            // 发送消息给客户端
-                            emitter.send(SseEmitter.event().data(message));
-                            continue;
-                        }
+                    long end = System.currentTimeMillis();
+                    System.out.println("(end - start) = " + (end - start));
+                    if (!CallbackController.noticeJsonMap.containsKey(dagId) ||
+                            end - start > 1000 * 60
+                    ) {
+                        emitter.send(SseEmitter.event().data("finished"));
+                        System.out.println("finished");
+                        break;
                     }
-                    emitter.send(SseEmitter.event().data("还未收到数据"));
 
-                    // 休眠1秒钟
+
+                    String message = CallbackController.noticeJsonMap.get(dagId).poll();
+                    log.info("message = " + message);
+                    if (message != null) {
+
+                        log.info("not null");
+                        // 发送消息给客户端
+                        emitter.send(SseEmitter.event().data(message));
+                    } else {
+                        emitter.send(SseEmitter.event().data("还未收到数据"));
+
+                    }
 
                 }
             } catch (Exception e) {

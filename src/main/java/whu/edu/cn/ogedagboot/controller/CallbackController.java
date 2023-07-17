@@ -47,6 +47,18 @@ public class CallbackController {
         String workID = JSONObject
                 .parseObject(noticeJson)
                 .getString("workID");
+
+        if (JSONObject.parseObject(noticeJson).containsKey("finish")){
+            assert (noticeJsonMap.containsKey(workID));
+            noticeJsonMap.get(workID).clear();
+            noticeJsonMap.remove(workID);
+            return;
+        }
+
+//        if (JSONObject.parseObject(noticeJson).containsKey("error")){
+//
+//        }
+
         String notice = JSONObject
                 .parseObject(noticeJson)
                 .getJSONObject("notice").toJSONString();
