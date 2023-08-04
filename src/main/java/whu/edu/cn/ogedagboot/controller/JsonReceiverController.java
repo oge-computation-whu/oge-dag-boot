@@ -205,6 +205,11 @@ public class JsonReceiverController {
         return resultObj;
     }
 
+    /**
+     * recevie the dag from modelbuilder and return the save result
+     * @param ogeModelExecuteBody the request body
+     * @return the save result
+     */
     @PostMapping("/executeModel")
     public JSONObject executeOGEModel(@RequestBody OGEModelExecuteBody ogeModelExecuteBody){
         String modelString = ogeModelExecuteBody.getModelString();
