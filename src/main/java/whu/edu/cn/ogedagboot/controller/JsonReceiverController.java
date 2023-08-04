@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import whu.edu.cn.ogedagboot.RequestBody.OGEModelExecuteBody;
 import whu.edu.cn.ogedagboot.RequestBody.OGEScriptExecuteBody;
 import whu.edu.cn.ogedagboot.ResponseBody.OGEScriptExecuteResponse;
 import whu.edu.cn.ogedagboot.bean.WebSocket;
@@ -201,6 +202,26 @@ public class JsonReceiverController {
         resultObj.put("spaceParams", spaceParamsObj);
         resultObj.put("dags", dagsObj);
         resultObj.put("log", ogeScriptExecuteResponse.getLog());
+        return resultObj;
+    }
+
+    @PostMapping("/executeModel")
+    public JSONObject executeOGEModel(@RequestBody OGEModelExecuteBody ogeModelExecuteBody){
+        String modelString = ogeModelExecuteBody.getModelString();
+        String userId = ogeModelExecuteBody.getUserId();
+        // 时间戳
+        long timeMillis = System.currentTimeMillis();
+        JSONArray dagArray = JSONArray.parseArray(modelString);
+        JSONObject resultObj = new JSONObject();
+        JSONObject dagsObj = new JSONObject();
+        for(int i = 0; i < dagArray.size(); i++){
+            String dagId = userId + "_" + timeMillis + "_" + i;
+            dagsObj.put(dagArray.getJSONObject(i).getString("layerName"), dagId);
+            redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 60* 5);
+        }
+        resultObj.put("spaceParams", ogeModelExecuteBody.getSpatialParam());
+        resultObj.put("dags", dagsObj);
+        resultObj.put("log", "");
         return resultObj;
     }
 
