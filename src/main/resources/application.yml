@@ -1,6 +1,6 @@
 server:
-#  port: 8085
-  port: 11112
+  port: 8085
+#  port: 11112
   servlet:
     context-path: /oge-dag-22
   tomcat:
