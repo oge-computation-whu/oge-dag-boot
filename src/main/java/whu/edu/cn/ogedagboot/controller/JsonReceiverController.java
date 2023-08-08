@@ -15,8 +15,6 @@ import whu.edu.cn.ogedagboot.util.*;
 
 import javax.servlet.http.HttpSession;
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 
 import static whu.edu.cn.ogedagboot.util.LivyUtil.livyTrigger;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.runCmd;
@@ -211,7 +209,7 @@ public class JsonReceiverController {
      * @return the save result
      */
     @PostMapping("/executeModel")
-    public JSONObject executeOGEModel(@RequestBody OGEModelExecuteBody ogeModelExecuteBody){
+    public JSONObject executeOGEModel(@RequestBody OGEModelExecuteBody ogeModelExecuteBody) {
         String modelString = ogeModelExecuteBody.getModelString();
         String userId = ogeModelExecuteBody.getUserId();
         // 时间戳
@@ -224,7 +222,7 @@ public class JsonReceiverController {
             dagsObj.put(dagArray.getJSONObject(i).getString("layerName"), dagId);
             redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 60* 5);
         }
-        resultObj.put("spaceParams", ogeModelExecuteBody.getSpatialParam());
+        resultObj.put("spaceParams", ogeModelExecuteBody.getSpaceParams());
         resultObj.put("dags", dagsObj);
         resultObj.put("log", "");
         return resultObj;

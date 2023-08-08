@@ -9,15 +9,15 @@ public class OGEModelExecuteBody {
 
     private String userId;
 
-    private SpatialParam spatialParam;
+    private SpaceParam spaceParams;
 }
 
 @Data
-class SpatialParam {
+class SpaceParam {
 
     private double lat;
 
-    private double lng;
+    private double lon;
 
     private int zoom;
 }
