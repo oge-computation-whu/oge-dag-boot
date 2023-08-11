@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import whu.edu.cn.ogedagboot.RequestBody.OGEModelExecuteBody;
 import whu.edu.cn.ogedagboot.RequestBody.OGEScriptExecuteBody;
 import whu.edu.cn.ogedagboot.ResponseBody.OGEScriptExecuteResponse;
 import whu.edu.cn.ogedagboot.bean.WebSocket;
@@ -14,8 +15,6 @@ import whu.edu.cn.ogedagboot.util.*;
 
 import javax.servlet.http.HttpSession;
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 
 import static whu.edu.cn.ogedagboot.util.LivyUtil.livyTrigger;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.runCmd;
@@ -201,6 +200,31 @@ public class JsonReceiverController {
         resultObj.put("spaceParams", spaceParamsObj);
         resultObj.put("dags", dagsObj);
         resultObj.put("log", ogeScriptExecuteResponse.getLog());
+        return resultObj;
+    }
+
+    /**
+     * recevie the dag from modelbuilder and return the save result
+     * @param ogeModelExecuteBody the request body
+     * @return the save result
+     */
+    @PostMapping("/executeModel")
+    public JSONObject executeOGEModel(@RequestBody OGEModelExecuteBody ogeModelExecuteBody) {
+        String modelString = ogeModelExecuteBody.getModelString();
+        String userId = ogeModelExecuteBody.getUserId();
+        // 时间戳
+        long timeMillis = System.currentTimeMillis();
+        JSONArray dagArray = JSONArray.parseArray(modelString);
+        JSONObject resultObj = new JSONObject();
+        JSONObject dagsObj = new JSONObject();
+        for(int i = 0; i < dagArray.size(); i++){
+            String dagId = userId + "_" + timeMillis + "_" + i;
+            dagsObj.put(dagArray.getJSONObject(i).getString("layerName"), dagId);
+            redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 60* 5);
+        }
+        resultObj.put("spaceParams", ogeModelExecuteBody.getSpaceParams());
+        resultObj.put("dags", dagsObj);
+        resultObj.put("log", "");
         return resultObj;
     }
 
