@@ -15,6 +15,9 @@ import whu.edu.cn.ogedagboot.util.*;
 
 import javax.servlet.http.HttpSession;
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 import static whu.edu.cn.ogedagboot.util.LivyUtil.livyTrigger;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.runCmd;
@@ -179,8 +182,6 @@ public class JsonReceiverController {
      * @param ogeScriptExecuteBody the request body
      * @return jsonObject { spaceParams: {}, dags:{"layerName" : "dagId"} }
      */
-
-
     @PostMapping("/executeCode")
     public JSONObject executeOGEScript(@RequestBody OGEScriptExecuteBody ogeScriptExecuteBody){
         String code = ogeScriptExecuteBody.getCode();
@@ -194,7 +195,23 @@ public class JsonReceiverController {
         JSONObject dagsObj = new JSONObject();
         for(int i=0; i < dagArray.size(); i++){
             String dagId = userId + "_" + timeMillis + "_" + i;
-            dagsObj.put(dagArray.getJSONObject(i).getString("layerName"), dagId);
+            JSONObject dagObj = dagArray.getJSONObject(i);
+            if(dagObj.containsKey("isBatch") && dagObj.getInteger("isBatch") == 1){
+                JSONObject taskObj = new JSONObject();
+                taskObj.put("isBatch", true);
+                LocalDateTime dateTime = LocalDateTime.ofEpochSecond(timeMillis / 1000, 0, ZoneOffset.UTC);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                String formattedDateTime = dateTime.format(formatter);
+                taskObj.put("creatTime", formattedDateTime);
+                if(dagObj.containsKey("exportCoverage")){
+                    taskObj.put("exportCoverage", dagObj.getJSONObject("exportCoverage"));
+                }else{
+                    taskObj.put("exportCoverage", null);
+                }
+                dagsObj.put(dagId, taskObj);
+            }else{
+                dagsObj.put(dagArray.getJSONObject(i).getString("layerName"), dagId);
+            }
             redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 60* 5);
         }
         resultObj.put("spaceParams", spaceParamsObj);

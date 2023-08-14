@@ -26,4 +26,6 @@ python:
 #  store-dir: /home/geocube/oge/oge-server/python-server/python-script/
   execute-sh: /home/wkx/oge/sh/ogeScriptExecute.sh
   store-dir: /home/wkx/oge/python_tools/oge-script/
+#  execute-sh: /home/oge/oge-server/python-server/ogeScriptExecute.sh
+#  store-dir: /home/oge/oge-server/python-server/oge-script/
 
