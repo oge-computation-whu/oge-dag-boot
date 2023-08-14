@@ -13,6 +13,7 @@ import java.io.*;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,7 +94,7 @@ public class ShUtil {
      */
     public OGEScriptExecuteResponse executeOGEScript(String code){
         String pythonFilePath = formPythonFile(code);
-        //String output = code;
+//        String output = code;
         String output = callShellForValue((new ProcessBuilder("bash", executeSh, pythonFilePath)));
         log.info(output);
         // get dagList, maybe many dags
@@ -102,6 +103,7 @@ public class ShUtil {
         output = matchResult1.getModifiedStr();
         JSONArray dagArray = new JSONArray();
         for(String dag : dagList){
+            JSONObject dagObj = JSONObject.parseObject(dag);
             dagArray.add(JSONObject.parseObject(dag));
         }
         // get spaceParamsList, only get last one
@@ -184,8 +186,34 @@ public class ShUtil {
         // JSONObject resultObj = shUtil.executeOGEScript("spaceParams=<<{'lng': 101.2275, 'lat': 25.1425, 'zoom': 15}>>dag=<<{'dag': '{\"0\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.addStyles\", \"arguments\": {\"input\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.croplandDetection\", \"arguments\": {\"input\": {\"functionInvocationValue\": {\"functionName\": \"Service.getCoverage\", \"arguments\": {\"baseUrl\": {\"constantValue\": \"http://localhost\"}, \"coverageID\": {\"constantValue\": \"BJ2002F8CVI_00220211229C10_COG\"}}}}}}}, \"max\": {\"constantValue\": 1}, \"min\": {\"constantValue\": 0}}}}}', 'layerName': 'croplandDetection'}>>dag=<<{'dag': '{\"0\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.addStyles\", \"arguments\": {\"input\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.croplandDetection\", \"arguments\": {\"input\": {\"functionInvocationValue\": {\"functionName\": \"Service.getCoverage\", \"arguments\": {\"baseUrl\": {\"constantValue\": \"http://localhost\"}, \"coverageID\": {\"constantValue\": \"BJ2002F8CVI_00220211229C10_COG\"}}}}}}}, \"max\": {\"constantValue\": 1}, \"min\": {\"constantValue\": 0}}}}}', 'layerName': 'croplandDetection2'}>>\n");
         String a = "s";
         OGEScriptExecuteResponse ogeScriptExecuteResponse = shUtil.executeOGEScript("hellow wkx \n spaceParams=<<{'lng': 101.2275, 'lat': 25.1425, 'zoom': 15}>>\n" +
-                "dag=<<{'dag': '{\"0\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.addStyles\", \"arguments\": {\"input\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.croplandDetection\", \"arguments\": {\"input\": {\"functionInvocationValue\": {\"functionName\": \"Service.getCoverage\", \"arguments\": {\"baseUrl\": {\"constantValue\": \"http://localhost\"}, \"coverageID\": {\"constantValue\": \"BJ2002F8CVI_00220211229C10_COG\"}}}}}}}, \"max\": {\"constantValue\": 1}, \"min\": {\"constantValue\": 0}}}}}', 'layerName': 'croplandDetection'}>>\n");
-       String log = ogeScriptExecuteResponse.getLog();
+                "dag=<<{'dag': '{\"1\": {\"constantValue\": \"#FFA500\"}, \"0\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.addStyles\", \"arguments\": {\"coverage\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.normalizedDifference\", \"arguments\": {\"bandNames\": {\"constantValue\": [\"B4\", \"B5\"]}, \"coverage\": {\"functionInvocationValue\": {\"functionName\": \"Coverage.toDouble\", \"arguments\": {\"coverage\": {\"functionInvocationValue\": {\"functionName\": \"Service.getCoverage\", \"arguments\": {\"baseUrl\": {\"constantValue\": \"http://localhost\"}, \"coverageID\": {\"constantValue\": \"LE71230392014351EDC00\"}}}}}}}}}}, \"max\": {\"constantValue\": 1}, \"min\": {\"constantValue\": -1}, \"palette\": {\"arrayValue\": {\"values\": [{\"valueReference\": \"1\"}, {\"constantValue\": \"#EEE8AA\"}, {\"valueReference\": \"1\"}, {\"constantValue\": \"#1E90FF\"}, {\"constantValue\": \"#0000FF\"}]}}}}}}', 'isBatch': 1, 'exportCoverage': {'crs': 'EPSG:4326', 'scale': 1000}}>>\n");
+        JSONArray dagArray = ogeScriptExecuteResponse.getDagList();
+        JSONObject spaceParamsObj = ogeScriptExecuteResponse.getSpaceParams();
+        JSONObject resultObj = new JSONObject();
+        JSONObject dagsObj = new JSONObject();
+        String userId = "wkx";
+        // 时间戳
+        long timeMillis = System.currentTimeMillis();
+        for(int i=0; i < dagArray.size(); i++){
+            String dagId = userId + "_" + timeMillis + "_" + i;
+            JSONObject dagObj = dagArray.getJSONObject(i);
+            if(dagObj.containsKey("isBatch") && dagObj.getInteger("isBatch") == 0){
+                dagsObj.put("taskId", dagId);
+                dagsObj.put("isBatch", true);
+                LocalDateTime dateTime = LocalDateTime.ofEpochSecond(timeMillis / 1000, 0, ZoneOffset.UTC);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                String formattedDateTime = dateTime.format(formatter);
+                dagsObj.put("creatTime", formattedDateTime);
+            }else{
+                dagsObj.put("isBatch", false);
+                dagsObj.put(dagArray.getJSONObject(i).getString("layerName"), dagId);
+            }
+//            redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 60* 5);
+        }
+        resultObj.put("spaceParams", spaceParamsObj);
+        resultObj.put("dags", dagsObj);
+        resultObj.put("log", ogeScriptExecuteResponse.getLog());
+        String log = ogeScriptExecuteResponse.getLog();
         System.out.println(log);
         // String a = "s";
     }
