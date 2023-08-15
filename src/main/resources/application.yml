@@ -20,7 +20,17 @@ spring:
       shutdown-timeout: 100ms
     password: 'ypfamily608'
     port: 6379
-
+  datasource:
+    url: jdbc:postgresql://125.220.153.23:30865/oge
+    driver-class-name: org.postgresql.Driver
+    username: oge
+    password: ypfamily608
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        hbm2ddl:
+          auto: update
 python:
 #  execute-sh: /home/geocube/oge/oge-server/python-server/ogescript_execute.sh
 #  store-dir: /home/geocube/oge/oge-server/python-server/python-script/

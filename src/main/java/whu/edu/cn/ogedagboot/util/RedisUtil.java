@@ -19,38 +19,40 @@ public class RedisUtil {
 
     /**
      * 保存键值对
-     * @param key key
+     *
+     * @param key   key
      * @param value value
      * @return true false
      */
-    public boolean saveKeyValue(String key, String value){
-        try{
+    public boolean saveKeyValue(String key, String value) {
+        try {
             Jedis jedis = jedisPool.getResource();
             jedis.set(key, value);
             jedis.close();
             return true;
-        }catch (Exception e){
-           log.error("存储key:" + key + "失败");
-           e.printStackTrace();
-           return false;
+        } catch (Exception e) {
+            log.error("存储key:" + key + "失败");
+            e.printStackTrace();
+            return false;
         }
     }
 
     /**
      * 保存键值对
-     * @param key key
-     * @param value value
+     *
+     * @param key     key
+     * @param value   value
      * @param timeout 超时时间 seconds
      * @return true false
      */
-    public boolean saveKeyValue(String key, String value, int timeout){
-        try{
+    public boolean saveKeyValue(String key, String value, int timeout) {
+        try {
             Jedis jedis = jedisPool.getResource();
             jedis.set(key, value);
             jedis.expire(key, timeout);
             jedis.close();
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("存储key:" + key + "失败");
             e.printStackTrace();
             return false;
@@ -72,16 +74,17 @@ public class RedisUtil {
 
     /**
      * 获取key
+     *
      * @param key 键值
      * @return value
      */
-    public String getValueByKey(String key){
+    public String getValueByKey(String key) {
         String value = null;
-        try{
+        try {
             Jedis jedis = jedisPool.getResource();
             value = jedis.get(key);
             jedis.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("取出key:" + key + "失败");
             e.printStackTrace();
         }
@@ -103,16 +106,17 @@ public class RedisUtil {
 
     /**
      * 删除key
+     *
      * @param key 删除key
      * @return true false
      */
-    public boolean deleteKey(String key){
-        try{
+    public boolean deleteKey(String key) {
+        try {
             Jedis jedis = jedisPool.getResource();
             jedis.del(key);
             jedis.close();
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("删除key:" + key + "失败");
             e.printStackTrace();
             return false;

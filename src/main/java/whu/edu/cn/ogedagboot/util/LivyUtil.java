@@ -3,6 +3,7 @@ package whu.edu.cn.ogedagboot.util;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.val;
 import whu.edu.cn.ogedagboot.controller.CallbackController;
 
 import java.util.ArrayList;
@@ -177,10 +178,63 @@ public class LivyUtil {
             resultJsonObject = JSONObject.parseObject(CallbackController.outJsonsOfTMS.remove(originTaskID));
             if (!resultJsonObject.containsKey("error")) {
                 resultJsonObject.put("status", "success");
-            }else {
-                resultJsonObject.put("status","error");
+            } else {
+                resultJsonObject.put("status", "error");
             }
             return resultJsonObject.toJSONString();
         }
+    }
+
+    public static JSONObject runBatch(String workTaskJSON, String originTaskID, String userName, String crs,
+                                      String scale, String folder, String filename, String format) {
+        // 获取batches所需的body信息
+        JSONObject body = new JSONObject();
+        JSONArray args = new JSONArray();
+        args.add(workTaskJSON);
+        args.add(originTaskID);
+        args.add(userName);
+        args.add(crs);
+        args.add(scale);
+        args.add(folder);
+        args.add(filename);
+        args.add(format);
+
+        body.put("args", args);
+        body.put("file", "local:/mnt/storage/dag-boot/oge-computation_ogc.jar");
+        body.put("className", "whu.edu.cn.trigger.TriggerBatch");
+        body.put("driverCores", 2);
+        body.put("driverMemory", "2g");
+        body.put("executorCores", 8);
+        body.put("executorMemory", "8g");
+        body.put("numExecutors", 3);
+
+        JSONObject bodyChildren = new JSONObject();
+        bodyChildren.put("spark.driver.extraClassPath", "local:/root/spark/jars/*");
+        bodyChildren.put("spark.executor.extraClassPath", "local:/root/spark/jars/*");
+        body.put("conf", bodyChildren);
+
+        //发送post /batches请求
+        String param = body.toJSONString();
+        String postSt = sendPost(LIVY_URL + "/batches", param);
+        System.out.println("postSt = " + postSt);
+
+        //将返回的batch转成JSONObject
+        JSONObject BatchJSONObject = JSON.parseObject(postSt);
+        int batchSessionId = BatchJSONObject.getInteger("id");
+        String state = BatchJSONObject.getString("state");
+
+        JSONObject result = new JSONObject();
+        result.put("batchSessionId", batchSessionId);
+        result.put("state", state);
+        return result;
+    }
+
+    public static String getBatchesState(int batchSessionId) {
+        String baseUrl = LIVY_URL;
+        String stateStr = sendGet(baseUrl + "/batches/" + batchSessionId + "/state");
+        JSONObject stateJSONObject = JSON.parseObject(stateStr);
+        String state = stateJSONObject.getString("state");
+
+        return state;
     }
 }
