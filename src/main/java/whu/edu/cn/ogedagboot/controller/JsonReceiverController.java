@@ -109,7 +109,7 @@ public class JsonReceiverController {
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagJsonStr);
         String originTaskId = (String) httpSession.getAttribute("ORIGIN_TASK_ID");
 
-        return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson),originTaskId);
+        return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson), originTaskId);
 
     }
 
@@ -179,11 +179,12 @@ public class JsonReceiverController {
 
     /**
      * execute the code of oge script and return the dag result
+     *
      * @param ogeScriptExecuteBody the request body
      * @return jsonObject { spaceParams: {}, dags:{"layerName" : "dagId"} }
      */
     @PostMapping("/executeCode")
-    public JSONObject executeOGEScript(@RequestBody OGEScriptExecuteBody ogeScriptExecuteBody){
+    public JSONObject executeOGEScript(@RequestBody OGEScriptExecuteBody ogeScriptExecuteBody) {
         String code = ogeScriptExecuteBody.getCode();
         String userId = ogeScriptExecuteBody.getUserId();
         // 时间戳
@@ -193,26 +194,26 @@ public class JsonReceiverController {
         JSONObject spaceParamsObj = ogeScriptExecuteResponse.getSpaceParams();
         JSONObject resultObj = new JSONObject();
         JSONObject dagsObj = new JSONObject();
-        for(int i=0; i < dagArray.size(); i++){
+        for (int i = 0; i < dagArray.size(); i++) {
             String dagId = userId + "_" + timeMillis + "_" + i;
             JSONObject dagObj = dagArray.getJSONObject(i);
-            if(dagObj.containsKey("isBatch") && dagObj.getInteger("isBatch") == 1){
+            if (dagObj.containsKey("isBatch") && dagObj.getInteger("isBatch") == 1) {
                 JSONObject taskObj = new JSONObject();
                 taskObj.put("isBatch", true);
                 LocalDateTime dateTime = LocalDateTime.ofEpochSecond(timeMillis / 1000, 0, ZoneOffset.UTC);
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 String formattedDateTime = dateTime.format(formatter);
                 taskObj.put("creatTime", formattedDateTime);
-                if(dagObj.containsKey("exportCoverage")){
+                if (dagObj.containsKey("exportCoverage")) {
                     taskObj.put("exportCoverage", dagObj.getJSONObject("exportCoverage"));
-                }else{
+                } else {
                     taskObj.put("exportCoverage", null);
                 }
                 dagsObj.put(dagId, taskObj);
-            }else{
+            } else {
                 dagsObj.put(dagArray.getJSONObject(i).getString("layerName"), dagId);
             }
-            redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 60* 5);
+            redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 3600 * 2);
         }
         resultObj.put("spaceParams", spaceParamsObj);
         resultObj.put("dags", dagsObj);
@@ -222,6 +223,7 @@ public class JsonReceiverController {
 
     /**
      * recevie the dag from modelbuilder and return the save result
+     *
      * @param ogeModelExecuteBody the request body
      * @return the save result
      */
@@ -234,10 +236,10 @@ public class JsonReceiverController {
         JSONArray dagArray = JSONArray.parseArray(modelString);
         JSONObject resultObj = new JSONObject();
         JSONObject dagsObj = new JSONObject();
-        for(int i = 0; i < dagArray.size(); i++){
+        for (int i = 0; i < dagArray.size(); i++) {
             String dagId = userId + "_" + timeMillis + "_" + i;
             dagsObj.put(dagArray.getJSONObject(i).getString("layerName"), dagId);
-            redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 60* 5);
+            redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 60 * 5);
         }
         resultObj.put("spaceParams", ogeModelExecuteBody.getSpaceParams());
         resultObj.put("dags", dagsObj);
@@ -247,23 +249,24 @@ public class JsonReceiverController {
 
     /**
      * receive the dag and spatial geom and execute the dag
-     * @param level:int map level
+     *
+     * @param level:int           map level
      * @param spatialRange:String spatial range
-     * @param dagId:String the Id of dag
+     * @param dagId:String        the Id of dag
      * @return String the url of tms
      */
     @PostMapping("/executeDag")
     public String executeDag(@RequestParam("level") int level,
                              @RequestParam("spatialRange") String spatialRange, @RequestParam("dagId") String dagId) {
         String dagWithNameStr = redisUtil.getValueByKey(dagId);
-        log.info("dag："+ dagWithNameStr);
-        if(dagWithNameStr == null){
+        log.info("dag：" + dagWithNameStr);
+        if (dagWithNameStr == null) {
             log.warn("未找到" + dagId + "对应的dag");
             return null;
         }
-        JSONObject dagWithNameObj =JSONObject.parseObject(dagWithNameStr);
+        JSONObject dagWithNameObj = JSONObject.parseObject(dagWithNameStr);
         JSONObject dagObj = JSONObject.parseObject(dagWithNameObj.getString("dag"));
-        if(dagWithNameObj.containsKey("layerName") && dagWithNameObj.getString("layerName") != null){
+        if (dagWithNameObj.containsKey("layerName") && dagWithNameObj.getString("layerName") != null) {
             dagObj.put("layerName", dagWithNameObj.getString("layerName"));
         }
         log.info(dagObj.toJSONString());
