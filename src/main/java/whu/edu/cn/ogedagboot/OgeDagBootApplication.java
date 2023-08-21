@@ -4,12 +4,17 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.net.UnknownHostException;
+
+@EnableScheduling
+@EnableAsync
 @SpringBootApplication
-
 public class OgeDagBootApplication {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnknownHostException {
         ConfigurableApplicationContext application = SpringApplication.run(OgeDagBootApplication.class, args);
         Environment env = application.getEnvironment();
         String ip = "125.220.153.23";//换服务记得改

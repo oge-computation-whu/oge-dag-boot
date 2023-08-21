@@ -1,6 +1,6 @@
 server:
   port: 8085
-#  port: 11112
+  #  port: 11112
   servlet:
     context-path: /oge-dag-22
   tomcat:
@@ -32,10 +32,22 @@ spring:
         hbm2ddl:
           auto: update
 python:
-#  execute-sh: /home/geocube/oge/oge-server/python-server/ogescript_execute.sh
-#  store-dir: /home/geocube/oge/oge-server/python-server/python-script/
+  #  execute-sh: /home/geocube/oge/oge-server/python-server/ogescript_execute.sh
+  #  store-dir: /home/geocube/oge/oge-server/python-server/python-script/
   execute-sh: /home/wkx/oge/sh/ogeScriptExecute.sh
   store-dir: /home/wkx/oge/python_tools/oge-script/
 #  execute-sh: /home/oge/oge-server/python-server/ogeScriptExecute.sh
 #  store-dir: /home/oge/oge-server/python-server/oge-script/
 
+mybatis:
+  configuration:
+    mapUnderscoreToCamelCase: true
+  #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath*:whu/edu/cn/ogedagboot/**/xml/*Dao.xml
+
+mybatis-plus:
+  mapper-locations: classpath*:whu/edu/cn/ogedagboot/**/xml/*Dao.xml
+  #  global-config:
+  #configuration:
+  #这个配置会将执行的sql打印出来，在开发或测试的时候可以用
+  #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

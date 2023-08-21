@@ -4,6 +4,9 @@ import org.springframework.stereotype.Service;
 import org.apache.ibatis.annotations.*;
 import whu.edu.cn.ogedagboot.bean.Task;
 
+import java.sql.Timestamp;
+import java.util.List;
+
 @Service
 @Mapper
 public interface TaskManagementDao {
@@ -40,7 +43,7 @@ public interface TaskManagementDao {
             ") values (#{id},#{DagId},#{batchSessionId},#{state},#{taskName}," +
             "#{crs},#{scale},#{userId},#{userName},#{description},#{format}," +
             "#{folder},#{filename})")
-    void addTaskRecord(Task task);
+    boolean addTaskRecord(Task task);
 
     /**
      * 删除一条任务记录
@@ -52,12 +55,30 @@ public interface TaskManagementDao {
     /**
      * 更新任务状态
      */
-    @Update("update oge_task_management set state=#{state}")
-    void updateTaskRecordOfstate(@Param("state") String state);
+    @Update("update oge_task_management set state=#{state} where dag_id=#{DagId}")
+    boolean updateTaskRecordOfstate(@Param("state") String state, @Param("DagId") String DagId);
 
     /**
      * 根据user_name获取user_id
      */
     @Select("select uuid from oge_sys_user where username = #{userName}")
     String getUserIdByUserName(@Param("userName") String userName);
+
+    /**
+     * 根据任务状态，返回对应任务列表以及详细信息
+     */
+    List<Task> getTaskRecordByState(@Param("state") String state);
+
+
+    /**
+     * 根据用户名和任务状态，返回个人对应任务以及详细信息
+     */
+    List<Task> getTaskRecordByStateAndUsername(@Param("state") String state, @Param("userName") String userName);
+
+    /**
+     * 根据dagId,更新任务的运行时间
+     */
+    @Update("update oge_task_management set run_time=#{runTime} where dag_id = #{DagId}")
+    void updateTaskRecordOfRunTime(@Param("runTime") Double runTime, @Param("DagId") String DagId);
+
 }

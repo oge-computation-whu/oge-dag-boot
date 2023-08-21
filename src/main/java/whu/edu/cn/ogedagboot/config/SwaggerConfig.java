@@ -87,7 +87,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
                 // //大标题
 //				.title("GeoIS-Boot 后台服务API接口文档")
 //				.title("LuoJiaSet service API documentation")
-                .title("OGE数据中心 API documentation")
+                .title("OGE DAG API documentation")
                 // 版本号
                 .version("1.0")
 //				.termsOfServiceUrl("NO terms of service")

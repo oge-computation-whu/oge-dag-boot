@@ -3,6 +3,7 @@ package whu.edu.cn.ogedagboot.service;
 import com.alibaba.fastjson.JSONObject;
 import whu.edu.cn.ogedagboot.bean.Task;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 public interface TaskManagementService {
@@ -20,7 +21,7 @@ public interface TaskManagementService {
     /**
      * 插入一条任务记录
      */
-    boolean addTaskRecord(Task task);
+    String addTaskRecord(Task task);
 
     /**
      * 删除一条任务记录
@@ -30,5 +31,31 @@ public interface TaskManagementService {
     /**
      * 更新任务状态
      */
-    boolean updateTaskRecordOfstate(String state);
+    String updateTaskRecordOfstate(String state, String DagId);
+
+
+    /**
+     * 根据任务状态，返回对应任务列表以及详细信息
+     */
+    String getTaskRecordByState(String state);
+
+    /**
+     * 根据任务状态和用户名，返回个人对应任务列表以及详细信息
+     */
+    String getTaskRecordByStateAndUsername(String state, String userName);
+
+    /**
+     * 记录任务运行时间
+     */
+    boolean updateTaskRecordOfRunTime(Double runTime, String dagId);
+
+    /**
+     * 返回管理员任务面板3个参数:任务待办、本周任务平均处理时间、本周完成任务数
+     */
+    String getTaskPanelOfAdmin();
+
+    /**
+     * 返回人员任务面板3个参数:任务待办、本周任务平均处理时间、本周完成任务数
+     */
+    String getTaskPanelOfUser(String userName);
 }

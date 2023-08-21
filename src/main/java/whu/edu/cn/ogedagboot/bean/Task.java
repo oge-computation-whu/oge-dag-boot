@@ -20,7 +20,7 @@ public class Task {
     @ApiModelProperty(value = "任务结束时间")
     private Timestamp endTime;
     @ApiModelProperty(value = "任务运行时间")
-    private Timestamp runTime;
+    private Double runTime;
     @ApiModelProperty(value = "任务名称")
     private String taskName;
     @ApiModelProperty(value = "坐标系")
@@ -29,12 +29,12 @@ public class Task {
     private String scale;
     @ApiModelProperty(value = "用户编号")
     private String userId;
-    @ApiModelProperty(value = "用户名稱")
+    @ApiModelProperty(value = "用户名称")
     private String userName;
-    @ApiModelProperty(value = "任务秒数")
+    @ApiModelProperty(value = "任务描述")
     private String description;
     @ApiModelProperty(value = "报错信息")
-    private String erorr;
+    private String error;
     @ApiModelProperty(value = "输出文件格式")
     private String format;
     @ApiModelProperty(value = "输出资源文件夹路径")
@@ -90,11 +90,11 @@ public class Task {
         this.endTime = endTime;
     }
 
-    public Timestamp getRunTime() {
+    public Double getRunTime() {
         return runTime;
     }
 
-    public void setRunTime(Timestamp runTime) {
+    public void setRunTime(Double runTime) {
         this.runTime = runTime;
     }
 
@@ -147,11 +147,11 @@ public class Task {
     }
 
     public String getErorr() {
-        return erorr;
+        return error;
     }
 
-    public void setErorr(String erorr) {
-        this.erorr = erorr;
+    public void setErorr(String error) {
+        this.error = error;
     }
 
     public String getFormat() {
