@@ -7,12 +7,17 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import whu.edu.cn.ogedagboot.bean.Task;
+import whu.edu.cn.ogedagboot.bean.TaskRequest;
 import whu.edu.cn.ogedagboot.service.TaskManagementService;
 import whu.edu.cn.ogedagboot.util.LivyUtil;
 import whu.edu.cn.ogedagboot.util.RedisUtil;
+
+import java.sql.Timestamp;
+import java.util.List;
 
 
 /**
@@ -36,27 +41,15 @@ public class TaskManagementController {
      */
     @PostMapping(value = "/addTaskRecord")
     @ApiOperation("运行并新增任务记录")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "id", value = "DAG的编号", required = true),
-            @ApiImplicitParam(name = "taskName", value = "任务名称", required = true),
-            @ApiImplicitParam(name = "crs", value = "坐标系", required = true),
-            @ApiImplicitParam(name = "scale", value = "尺度", required = true),
-            @ApiImplicitParam(name = "userName", value = "用户名称", required = true),
-            @ApiImplicitParam(name = "description", value = "任务描述", required = true),
-            @ApiImplicitParam(name = "folder", value = "输出资源文件夹路径", required = true),
-            @ApiImplicitParam(name = "filename", value = "输出文件名", required = true),
-            @ApiImplicitParam(name = "format", value = "输出文件格式", required = true)
-    })
-    public Task addTaskRecord(@RequestParam("id") String DagId,
-                              @RequestParam("taskName") String task_name,
-                              @RequestParam("crs") String crs,
-                              @RequestParam("scale") Double scale,
-                              @RequestParam("userName") String userName,
-                              @RequestParam("description") String description,
-                              @RequestParam("folder") String folder,
-                              @RequestParam("filename") String filename,
-                              @RequestParam("format") String format) {
-
+    public String addTaskRecord(@RequestBody TaskRequest taskRequest) {
+        String DagId = taskRequest.getId();
+        String task_name = taskRequest.getTaskName();
+        String crs = taskRequest.getCrs();
+        String scale = taskRequest.getScale();
+        String userName = taskRequest.getUserName();
+        String folder = taskRequest.getFolder();
+        String filename = taskRequest.getFilename();
+        String format = taskRequest.getFormat();
 
         String userId = taskManagementService.getUserIdByUserName(userName);
 
@@ -68,7 +61,6 @@ public class TaskManagementController {
         task.setScale(String.valueOf(scale));
         task.setUserId(userId);
         task.setUserName(userName);
-        task.setDescription(description);
         task.setFolder(folder);
         task.setFilename(filename);
         task.setFormat(format);
@@ -85,13 +77,10 @@ public class TaskManagementController {
         String state = LivyUtil.getBatchesState(batchSessionId);
         task.setState(state);
 
-        boolean flag = taskManagementService.addTaskRecord(task);
-        if (flag) {
-            System.out.println("新增一条任务记录：" + task.toString());
-            return task;
-        } else {
-            return null;
-        }
+
+        System.out.println("新增一条任务记录：" + task.toString());
+        return taskManagementService.addTaskRecord(task);
+
     }
 
     /**
@@ -119,19 +108,67 @@ public class TaskManagementController {
     @PutMapping(value = "/updateSate")
     @ApiOperation("更新任务状态")
     @ApiImplicitParam(name = "id", value = "DAG的编号", required = true)
-    public Task updateTaskRecordOfstate(@RequestParam("id") String DagId) {
+    public String updateTaskRecordOfstate(@RequestParam("id") String DagId) {
         Task task = taskManagementService.getTaskInfoByDagId(DagId);
         String batchSessionId = task.getBatchSessionId();
         String state = LivyUtil.getBatchesState(Integer.parseInt(batchSessionId));
 
-        boolean flag = taskManagementService.updateTaskRecordOfstate(state);
-        if (flag) {
-            System.out.println("更新一条任务记录：" + task.getId());
-            return task;
-        } else {
-            return null;
+
+        if (state.equals("success")) {
+            Timestamp endTime = new Timestamp(System.currentTimeMillis());
+            Timestamp startTime = task.getStartTime();
+            Double runTime = (double) (endTime.getTime() - startTime.getTime()) / 1000.0;
+
+            taskManagementService.updateTaskRecordOfRunTime(runTime, DagId);
         }
+        System.out.println("更新一条任务记录：" + task.getId());
+
+        return taskManagementService.updateTaskRecordOfstate(state, DagId);
     }
 
+    /**
+     * 根据任务状态，返回对应任务列表以及详细信息
+     */
+    @GetMapping(value = "/TaskRecordByState")
+    @ApiOperation("根据任务状态，返回对应任务列表以及详细信息")
+    @ApiImplicitParam(name = "state", value = "任务状态", required = true)
+    public String getTaskRecordByState(@RequestParam("state") String state) {
+        return taskManagementService.getTaskRecordByState(state);
+    }
+
+
+    /**
+     * 根据任务状态和用户名，返回个人对应任务列表以及详细信息
+     */
+    @GetMapping(value = "/TaskRecordByStateAndUsername")
+    @ApiOperation("根据任务状态和用户名，返回个人对应任务列表以及详细信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "state", value = "任务状态", required = true),
+            @ApiImplicitParam(name = "userName", value = "用户名", required = true)
+    })
+
+    public String getTaskRecordByStateAndUsername(@RequestParam("state") String state,
+                                                  @RequestParam("userName") String userName) {
+        return taskManagementService.getTaskRecordByStateAndUsername(state, userName);
+    }
+
+    /**
+     * 返回管理员任务面板3个参数:任务待办、本周任务平均处理时间、本周完成任务数
+     */
+    @GetMapping(value = "/TaskPanelOfAdmin")
+    @ApiOperation("返回管理员任务面板3个参数:任务待办数量、本周任务平均处理时间、本周完成任务数")
+    public String getTaskPanelOfAdmin() {
+        return taskManagementService.getTaskPanelOfAdmin();
+    }
+
+    /**
+     * 返回个人任务面板3个参数:任务待办、本周任务平均处理时间、本周完成任务数
+     */
+    @GetMapping(value = "/TaskPanelOfUser")
+    @ApiOperation("返回用户个人任务面板3个参数:任务待办数量、本周任务平均处理时间、本周完成任务数")
+    @ApiImplicitParam(name = "userName", value = "用户名", required = true)
+    public String getTaskPanelOfUser(@RequestParam("userName") String userName) {
+        return taskManagementService.getTaskPanelOfUser(userName);
+    }
 
 }
