@@ -92,7 +92,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         // 获取任务待办的数量
         List<Task> startingTasks = taskManagementDao.getTaskRecordByState("starting");
         int numberOfStartingTasks = startingTasks.size();
-        result.put("任务待办的数量", numberOfStartingTasks);
+        result.put("NumberOfWaitingTask", numberOfStartingTasks);
 
         // 计算本周任务平均处理时间
         List<Task> allTasks = taskManagementDao.getTaskRecordByState("");
@@ -119,7 +119,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         }
         double averageRunTimeSeconds = numberOfNonEmptyRunTimes > 0 ? (double) totalRunTimeMillis / numberOfNonEmptyRunTimes : 0.0;
 
-        result.put("本周任务平均处理时间(秒)", averageRunTimeSeconds);
+        result.put("AverageTaskRuningTimeWeekly", averageRunTimeSeconds);
 
         // 计算本周完成任务数
         List<Task> doneTasks = taskManagementDao.getTaskRecordByState("success");
@@ -132,7 +132,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
                 numberOfDoneTasks++;
             }
         }
-        result.put("本周完成任务数量", numberOfDoneTasks);
+        result.put("NumberOfDoneTaskWeekly", numberOfDoneTasks);
 
         return httpStringUtil.ok("返回管理员任务面板3个参数:任务待办、本周任务平均处理时间、本周完成任务数", result);
     }
@@ -144,7 +144,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         // 获取任务待办的数量
         List<Task> startingTasks = taskManagementDao.getTaskRecordByStateAndUsername("starting", userName);
         int numberOfStartingTasks = startingTasks.size();
-        result.put("任务待办的数量", numberOfStartingTasks);
+        result.put("NumberOfWaitingTask", numberOfStartingTasks);
 
         // 计算本周任务平均处理时间
         List<Task> allTasks = taskManagementDao.getTaskRecordByStateAndUsername("", userName);
@@ -171,7 +171,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         }
         double averageRunTimeSeconds = numberOfNonEmptyRunTimes > 0 ? (double) totalRunTimeMillis / numberOfNonEmptyRunTimes : 0.0;
 
-        result.put("本周任务平均处理时间(秒)", averageRunTimeSeconds);
+        result.put("AverageTaskRuningTimeWeekly", averageRunTimeSeconds);
 
         // 计算本周完成任务数
         List<Task> doneTasks = taskManagementDao.getTaskRecordByStateAndUsername("success", userName);
@@ -184,7 +184,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
                 numberOfDoneTasks++;
             }
         }
-        result.put("本周完成任务数量", numberOfDoneTasks);
+        result.put("NumberOfDoneTaskWeekly", numberOfDoneTasks);
 
         return httpStringUtil.ok("返回管理员任务面板3个参数:任务待办、本周任务平均处理时间、本周完成任务数", result);
     }
