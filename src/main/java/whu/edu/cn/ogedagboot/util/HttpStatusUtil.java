@@ -1,6 +1,6 @@
 package whu.edu.cn.ogedagboot.util;
 
-public enum HttpStatus {
+public enum HttpStatusUtil {
     // 1XX
     CONTINUE(100), SWITCHING_PROTOCOLS(101),
     PROCESSING(102), EARLY_HINTS(103),
@@ -21,7 +21,7 @@ public enum HttpStatus {
 
     private final int code;
 
-    HttpStatus(int code) {
+    HttpStatusUtil(int code) {
         this.code = code;
     }
 
