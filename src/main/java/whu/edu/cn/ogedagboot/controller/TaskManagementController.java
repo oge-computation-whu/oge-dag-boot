@@ -7,12 +7,14 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import whu.edu.cn.ogedagboot.bean.Task;
 import whu.edu.cn.ogedagboot.bean.TaskRequest;
 import whu.edu.cn.ogedagboot.service.TaskManagementService;
+import whu.edu.cn.ogedagboot.util.HttpStringUtil;
 import whu.edu.cn.ogedagboot.util.LivyUtil;
 import whu.edu.cn.ogedagboot.util.RedisUtil;
 
@@ -24,6 +26,7 @@ import java.util.List;
  * 任务管理
  */
 @RestController
+@Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
 @Api(tags = "任务管理接口")
 public class TaskManagementController {
@@ -33,6 +36,9 @@ public class TaskManagementController {
 
     @Autowired
     private RedisUtil redisUtil;
+
+    @Autowired
+    private HttpStringUtil httpStringUtil;
 
     /**
      * 运行并新增任务记录
@@ -69,7 +75,14 @@ public class TaskManagementController {
         String workTaskJSON = redisUtil.getValueByKey(DagId);
 //        将workTaskJSON和batchId输入,运行batch,获取返回的sessionId和state
         JSONObject workTaskJsonObj = JSON.parseObject(workTaskJSON);
-        String dagStr = workTaskJsonObj.getString("dag").replace("{", " { ").replace("}", " } ");
+        JSONObject a = JSON.parseObject(workTaskJsonObj.getString("dag"));
+        a.put("isBatch", 1);
+        String dagStr = a.toString().replace("{", " { ").replace(
+                "}", " } ");
+//        String dagStr =
+//                JSON.parseObject(workTaskJsonObj.getString("dag")).put("isBatch", 1).toString().replace("{", " { ").replace(
+//                        "}", " } ");
+//        String dagStr = workTaskJsonObj.getString("dag").replace("{", " { ").replace("}", " } ");
         JSONObject result = LivyUtil.runBatch(dagStr, DagId, userName, crs, String.valueOf(scale), folder,
                 filename, format);
         int batchSessionId = result.getInteger("batchSessionId");
@@ -110,20 +123,27 @@ public class TaskManagementController {
     @ApiImplicitParam(name = "id", value = "DAG的编号", required = true)
     public String updateTaskRecordOfstate(@RequestParam("id") String DagId) {
         Task task = taskManagementService.getTaskInfoByDagId(DagId);
-        String batchSessionId = task.getBatchSessionId();
-        String state = LivyUtil.getBatchesState(Integer.parseInt(batchSessionId));
+        try {
+            String batchSessionId = task.getBatchSessionId();
+            String state = LivyUtil.getBatchesState(Integer.parseInt(batchSessionId));
 
+            if (state.equals("success")) {
+                Timestamp endTime = new Timestamp(System.currentTimeMillis());
+                Timestamp startTime = task.getStartTime();
+                Double runTime = (double) (endTime.getTime() - startTime.getTime()) / 1000.0;
 
-        if (state.equals("success")) {
-            Timestamp endTime = new Timestamp(System.currentTimeMillis());
-            Timestamp startTime = task.getStartTime();
-            Double runTime = (double) (endTime.getTime() - startTime.getTime()) / 1000.0;
+                taskManagementService.updateTaskRecordOfRunTime(runTime, DagId);
+            }
+            System.out.println("更新一条任务记录：" + task.getId());
 
-            taskManagementService.updateTaskRecordOfRunTime(runTime, DagId);
+            return taskManagementService.updateTaskRecordOfstate(state, DagId);
+
+        } catch (Exception e) {
+            log.error("Error");
+            return httpStringUtil.failure("更新任务状态失败");
         }
-        System.out.println("更新一条任务记录：" + task.getId());
 
-        return taskManagementService.updateTaskRecordOfstate(state, DagId);
+
     }
 
     /**
