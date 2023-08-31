@@ -19,7 +19,6 @@ import whu.edu.cn.ogedagboot.util.LivyUtil;
 import whu.edu.cn.ogedagboot.util.RedisUtil;
 
 import java.sql.Timestamp;
-import java.util.List;
 
 
 /**
@@ -89,11 +88,17 @@ public class TaskManagementController {
         task.setBatchSessionId(String.valueOf(batchSessionId));
         String state = LivyUtil.getBatchesState(batchSessionId);
         task.setState(state);
-
-
         System.out.println("新增一条任务记录：" + task.toString());
-        return taskManagementService.addTaskRecord(task);
+        String addTask = taskManagementService.addTaskRecord(task);
 
+        //开始轮询任务，获取状态并输入数据库
+        try {
+            taskManagementService.pollTask(batchSessionId, DagId);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return addTask;
     }
 
     /**
@@ -124,19 +129,8 @@ public class TaskManagementController {
     public String updateTaskRecordOfstate(@RequestParam("id") String DagId) {
         Task task = taskManagementService.getTaskInfoByDagId(DagId);
         try {
-            String batchSessionId = task.getBatchSessionId();
-            String state = LivyUtil.getBatchesState(Integer.parseInt(batchSessionId));
-
-            if (state.equals("success")) {
-                Timestamp endTime = new Timestamp(System.currentTimeMillis());
-                Timestamp startTime = task.getStartTime();
-                Double runTime = (double) (endTime.getTime() - startTime.getTime()) / 1000.0;
-
-                taskManagementService.updateTaskRecordOfRunTime(runTime, DagId);
-            }
             System.out.println("更新一条任务记录：" + task.getId());
-
-            return taskManagementService.updateTaskRecordOfstate(state, DagId);
+            return task.getState();
 
         } catch (Exception e) {
             log.error("Error");

@@ -47,7 +47,7 @@ public interface TaskManagementService {
     /**
      * 记录任务运行时间
      */
-    boolean updateTaskRecordOfRunTime(Double runTime, String dagId);
+    boolean updateTaskRecordOfEndTimeAndRunTime(Timestamp endTime, Double runTime, String dagId);
 
     /**
      * 返回管理员任务面板3个参数:任务待办、本周任务平均处理时间、本周完成任务数
@@ -58,4 +58,9 @@ public interface TaskManagementService {
      * 返回人员任务面板3个参数:任务待办、本周任务平均处理时间、本周完成任务数
      */
     String getTaskPanelOfUser(String userName);
+
+    /**
+     * 轮询任务状态
+     */
+    String pollTask(int batchSessionId, String DagId) throws InterruptedException;
 }

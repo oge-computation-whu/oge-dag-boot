@@ -6,11 +6,14 @@ import org.springframework.stereotype.Service;
 import whu.edu.cn.ogedagboot.bean.Task;
 import whu.edu.cn.ogedagboot.dao.TaskManagementDao;
 import whu.edu.cn.ogedagboot.util.HttpStringUtil;
+import whu.edu.cn.ogedagboot.util.LivyUtil;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 
@@ -74,10 +77,10 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     }
 
     @Override
-    public boolean updateTaskRecordOfRunTime(Double runTime, String dagId) {
+    public boolean updateTaskRecordOfEndTimeAndRunTime(Timestamp endTime, Double runTime, String dagId) {
         boolean flag = false;
         try {
-            taskManagementDao.updateTaskRecordOfRunTime(runTime, dagId);
+            taskManagementDao.updateTaskRecordOfEndTimeAndRunTime(endTime, runTime, dagId);
             flag = true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -187,6 +190,42 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         result.put("NumberOfDoneTaskWeekly", numberOfDoneTasks);
 
         return httpStringUtil.ok("返回管理员任务面板3个参数:任务待办、本周任务平均处理时间、本周完成任务数", result);
+    }
+
+    @Override
+    public String pollTask(int batchSessionId, String DagId) throws InterruptedException {
+        Timer timer = new Timer();
+        final String[] state = {null};
+        timer.scheduleAtFixedRate(new TimerTask() {
+            int secondsPassed = 0;
+
+            @Override
+            public void run() {
+                state[0] = LivyUtil.getBatchesState(batchSessionId);
+                System.out.println("status:" + state[0]);
+                taskManagementDao.updateTaskRecordOfstate(state[0], DagId);
+                switch (state[0]) {
+                    case "success":
+                        Task task = taskManagementDao.getTaskInfoByDagId(DagId);
+                        Timestamp endTime = new Timestamp(System.currentTimeMillis());
+                        Timestamp startTime = task.getStartTime();
+                        Double runTime = (double) (endTime.getTime() - startTime.getTime()) / 1000.0;
+                        taskManagementDao.updateTaskRecordOfEndTimeAndRunTime(endTime, runTime, DagId);
+                        timer.cancel();
+                        break;
+                    case "dead":
+                        timer.cancel();
+                        break;
+                    default:
+                        break;
+                }
+                if (secondsPassed >= 600) { // 如果满足条件或超过10分钟，退出
+                    System.out.println("Time out");
+                    timer.cancel();
+                }
+            }
+        }, 0, 1000); // 以毫秒为单位，表示每秒执行一次
+        return state[0];
     }
 
 
