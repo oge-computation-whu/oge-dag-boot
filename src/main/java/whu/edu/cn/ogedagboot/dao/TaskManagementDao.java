@@ -78,7 +78,8 @@ public interface TaskManagementDao {
     /**
      * 根据dagId,更新任务的运行时间
      */
-    @Update("update oge_task_management set run_time=#{runTime} where dag_id = #{DagId}")
-    void updateTaskRecordOfRunTime(@Param("runTime") Double runTime, @Param("DagId") String DagId);
+    @Update("update oge_task_management set run_time=#{runTime}, end_time=#{endTime} where dag_id = #{DagId}")
+    void updateTaskRecordOfEndTimeAndRunTime(@Param("endTime") Timestamp endTime, @Param("runTime") Double runTime,
+                                             @Param("DagId") String DagId);
 
 }
