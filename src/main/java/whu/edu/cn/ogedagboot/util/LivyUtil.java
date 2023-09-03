@@ -3,7 +3,6 @@ package whu.edu.cn.ogedagboot.util;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import lombok.val;
 import whu.edu.cn.ogedagboot.controller.CallbackController;
 
 import java.util.ArrayList;
