@@ -14,14 +14,14 @@ public interface TaskManagementService {
     String getUserIdByUserName(String userName);
 
     /**
-     * 根据前端DAG_id获取task全部信息
+     * 根据前端DagId获取task全部信息
      */
     Task getTaskInfoByDagId(String DagId);
 
     /**
      * 插入一条任务记录
      */
-    String addTaskRecord(Task task);
+    boolean addTaskRecord(Task task);
 
     /**
      * 删除一条任务记录
