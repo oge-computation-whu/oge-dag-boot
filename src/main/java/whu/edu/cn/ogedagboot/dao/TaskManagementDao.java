@@ -20,7 +20,7 @@ public interface TaskManagementDao {
     /**
      * 根据前端DAG_id获取task全部信息
      */
-    @Select("SELECT * FROM oge_task_management WHERE DAG_id = #{DagId};")
+    @Select("SELECT * FROM oge_task_management WHERE dag_id = #{DagId};")
     Task getTaskInfoByDagId(@Param("DagId") String DagId);
 
     /**
@@ -43,7 +43,7 @@ public interface TaskManagementDao {
             ") values (#{id},#{DagId},#{batchSessionId},#{state},#{taskName}," +
             "#{crs},#{scale},#{userId},#{userName},#{description},#{format}," +
             "#{folder},#{filename})")
-    boolean addTaskRecord(Task task);
+    void addTaskRecord(Task task);
 
     /**
      * 删除一条任务记录

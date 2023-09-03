@@ -8,7 +8,6 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import whu.edu.cn.ogedagboot.bean.Task;
@@ -17,8 +16,6 @@ import whu.edu.cn.ogedagboot.service.TaskManagementService;
 import whu.edu.cn.ogedagboot.util.HttpStringUtil;
 import whu.edu.cn.ogedagboot.util.LivyUtil;
 import whu.edu.cn.ogedagboot.util.RedisUtil;
-
-import java.sql.Timestamp;
 
 
 /**
@@ -52,12 +49,11 @@ public class TaskManagementController {
         String crs = taskRequest.getCrs();
         String scale = taskRequest.getScale();
         String userName = taskRequest.getUserName();
-        String folder = taskRequest.getFolder();
         String filename = taskRequest.getFilename();
         String format = taskRequest.getFormat();
 
         String userId = taskManagementService.getUserIdByUserName(userName);
-
+        String folder = "result";
 //        定义并获取task的属性值
         Task task = new Task();
         task.setDagId(DagId);
@@ -72,33 +68,36 @@ public class TaskManagementController {
 
 //        根据batchId从redis中获取workTaskJSON
         String workTaskJSON = redisUtil.getValueByKey(DagId);
-//        将workTaskJSON和batchId输入,运行batch,获取返回的sessionId和state
-        JSONObject workTaskJsonObj = JSON.parseObject(workTaskJSON);
-        JSONObject a = JSON.parseObject(workTaskJsonObj.getString("dag"));
-        a.put("isBatch", 1);
-        String dagStr = a.toString().replace("{", " { ").replace(
-                "}", " } ");
+        if (workTaskJSON.isEmpty()) {
+            return httpStringUtil.failure("代码已过期");
+        } else {
+            //        将workTaskJSON和batchId输入,运行batch,获取返回的sessionId和state
+            JSONObject workTaskJsonObj = JSON.parseObject(workTaskJSON);
+            JSONObject a = JSON.parseObject(workTaskJsonObj.getString("dag"));
+            a.put("isBatch", 1);
+            String dagStr = a.toString().replace("{", " { ").replace(
+                    "}", " } ");
 //        String dagStr =
 //                JSON.parseObject(workTaskJsonObj.getString("dag")).put("isBatch", 1).toString().replace("{", " { ").replace(
 //                        "}", " } ");
 //        String dagStr = workTaskJsonObj.getString("dag").replace("{", " { ").replace("}", " } ");
-        JSONObject result = LivyUtil.runBatch(dagStr, DagId, userName, crs, String.valueOf(scale), folder,
-                filename, format);
-        int batchSessionId = result.getInteger("batchSessionId");
-        task.setBatchSessionId(String.valueOf(batchSessionId));
-        String state = LivyUtil.getBatchesState(batchSessionId);
-        task.setState(state);
-        System.out.println("新增一条任务记录：" + task.toString());
-        String addTask = taskManagementService.addTaskRecord(task);
+            JSONObject result = LivyUtil.runBatch(dagStr, DagId, userName, crs, String.valueOf(scale), folder,
+                    filename, format);
+            int batchSessionId = result.getInteger("batchSessionId");
+            task.setBatchSessionId(String.valueOf(batchSessionId));
+            String state = LivyUtil.getBatchesState(batchSessionId);
+            task.setState(state);
+            System.out.println("新增一条任务记录：" + task.toString());
+            taskManagementService.addTaskRecord(task);
 
-        //开始轮询任务，获取状态并输入数据库
-        try {
-            taskManagementService.pollTask(batchSessionId, DagId);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            //开始轮询任务，获取状态并输入数据库
+            try {
+                taskManagementService.pollTask(batchSessionId, DagId);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return httpStringUtil.ok("成功新增一条任务记录", task);
         }
-
-        return addTask;
     }
 
     /**
@@ -133,6 +132,7 @@ public class TaskManagementController {
             return task.getState();
 
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("Error");
             return httpStringUtil.failure("更新任务状态失败");
         }

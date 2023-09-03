@@ -25,19 +25,20 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     private HttpStringUtil httpStringUtil;
 
     @Override
-    public String addTaskRecord(Task task) {
-        String taskId = UUID.randomUUID().toString();
-        while (taskManagementDao.existsById(taskId) != 0) {
-            taskId = UUID.randomUUID().toString();
+    public boolean addTaskRecord(Task task) {
+        boolean flag = false;
+        try {
+            String taskId = UUID.randomUUID().toString();
+            while (taskManagementDao.existsById(taskId) != 0) {
+                taskId = UUID.randomUUID().toString();
+            }
+            task.setId(taskId);
+            taskManagementDao.addTaskRecord(task);
+            flag = true;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        task.setId(taskId);
-        boolean flag = taskManagementDao.addTaskRecord(task);
-
-        if (flag) {
-            return httpStringUtil.ok("运行并添加一条任务记录", task);
-        } else {
-            return httpStringUtil.failure("添加任务记录失败");
-        }
+        return flag;
     }
 
     @Override
@@ -201,6 +202,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
 
             @Override
             public void run() {
+                secondsPassed++;
                 state[0] = LivyUtil.getBatchesState(batchSessionId);
                 System.out.println("status:" + state[0]);
                 taskManagementDao.updateTaskRecordOfstate(state[0], DagId);
@@ -221,6 +223,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
                 }
                 if (secondsPassed >= 600) { // 如果满足条件或超过10分钟，退出
                     System.out.println("Time out");
+                    taskManagementDao.updateTaskRecordOfstate("dead", DagId);
                     timer.cancel();
                 }
             }
