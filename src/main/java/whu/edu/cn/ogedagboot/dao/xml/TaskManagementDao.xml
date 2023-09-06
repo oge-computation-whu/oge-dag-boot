@@ -10,6 +10,7 @@
         <if test="state !=''">
             AND t1.state = #{state}
         </if>
+        ORDER BY t1.start_time DESC
     </select>
 
     <select id="getTaskRecordByStateAndUsername" resultType="whu.edu.cn.ogedagboot.bean.Task">
@@ -21,5 +22,6 @@
         <if test="state !=''">
             AND t1.state = #{state}
         </if>
+        ORDER BY t1.start_time DESC
     </select>
 </mapper>
