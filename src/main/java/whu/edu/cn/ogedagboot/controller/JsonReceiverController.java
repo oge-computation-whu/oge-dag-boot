@@ -97,6 +97,7 @@ public class JsonReceiverController {
     @PostMapping("/runDagJson")
     public String runDagJson(@RequestParam("level") int level,
                              @RequestParam("spatialRange") String spatialRange,
+                             @RequestParam("userId") String userId,
                              HttpSession httpSession) {//TODO
 
         String ogeDagJsonStr = (String) httpSession.getAttribute("OGE_DAG_JSON");
@@ -109,7 +110,7 @@ public class JsonReceiverController {
         JSONObject ogeDagJson = JSONObject.parseObject(ogeDagJsonStr);
         String originTaskId = (String) httpSession.getAttribute("ORIGIN_TASK_ID");
 
-        return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson), originTaskId);
+        return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, ogeDagJson), originTaskId, userId);
 
     }
 
@@ -257,7 +258,8 @@ public class JsonReceiverController {
      */
     @PostMapping("/executeDag")
     public String executeDag(@RequestParam("level") int level,
-                             @RequestParam("spatialRange") String spatialRange, @RequestParam("dagId") String dagId) {
+                             @RequestParam("spatialRange") String spatialRange, @RequestParam("dagId") String dagId,
+                             @RequestParam("userId") String userId) {
         String dagWithNameStr = redisUtil.getValueByKey(dagId);
         log.info("dag：" + dagWithNameStr);
         if (dagWithNameStr == null) {
@@ -270,6 +272,6 @@ public class JsonReceiverController {
             dagObj.put("layerName", dagWithNameObj.getString("layerName"));
         }
         log.info(dagObj.toJSONString());
-        return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, dagObj), dagId);
+        return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, dagObj), dagId, userId);
     }
 }
