@@ -72,7 +72,7 @@ public class LivyUtil {
         }
     }
 
-    public static String livyTrigger(String workTaskJSON, String originTaskID) {
+    public static String livyTrigger(String workTaskJSON, String originTaskID, String userId) {
         String baseUrl = LIVY_URL;
         int sessionNumExpected = LIVY_SESSION_NUM;
 
@@ -149,7 +149,8 @@ public class LivyUtil {
             JSONObject body = new JSONObject();
             String code = "whu.edu.cn.trigger.Trigger.runMain(sc," +
                     "\"" + workTaskJSON /* modis.json */ + "\"," +
-                    "\"" + originTaskID /* 第一次点run标识的业务 */ + "\"" +
+                    "\"" + originTaskID /* 第一次点run标识的业务 */ + "\"," +
+                    "\"" + userId /* 第一次点run标识的业务 */ + "\"" +
                     ")";
             body.put("code", code);
             body.put("kind", "spark");
