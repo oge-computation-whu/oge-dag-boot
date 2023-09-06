@@ -81,7 +81,7 @@ public class TaskManagementController {
 //                JSON.parseObject(workTaskJsonObj.getString("dag")).put("isBatch", 1).toString().replace("{", " { ").replace(
 //                        "}", " } ");
 //        String dagStr = workTaskJsonObj.getString("dag").replace("{", " { ").replace("}", " } ");
-            JSONObject result = LivyUtil.runBatch(dagStr, DagId, userName, crs, String.valueOf(scale), folder,
+            JSONObject result = LivyUtil.runBatch(dagStr, DagId, userId, crs, String.valueOf(scale), folder,
                     filename, format);
             int batchSessionId = result.getInteger("batchSessionId");
             task.setBatchSessionId(String.valueOf(batchSessionId));
