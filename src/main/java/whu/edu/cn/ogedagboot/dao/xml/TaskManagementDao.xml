@@ -4,7 +4,7 @@
     <select id="getTaskRecordByState" resultType="whu.edu.cn.ogedagboot.bean.Task">
         select t1.id AS id, t1.dag_id AS DagId, t1.state AS state, t1.start_time AS startTime, t1.end_time AS endTime,
         t1.run_time AS runTime, t1.task_name AS taskName, t1.user_name AS userName, t1.description AS description,
-        t1.format AS format, t1.folder AS folder, t1.filename AS filename
+        t1.format AS format, t1.folder AS folder, t1.filename AS filename, t1.script AS script
         from oge_task_management AS t1
         where 1=1
         <if test="state !=''">
@@ -16,7 +16,7 @@
     <select id="getTaskRecordByStateAndUsername" resultType="whu.edu.cn.ogedagboot.bean.Task">
         select t1.id AS id, t1.dag_id AS DagId, t1.state AS state, t1.start_time AS startTime, t1.end_time AS endTime,
         t1.run_time AS runTime, t1.task_name AS taskName, t1.user_name AS userName, t1.description AS description,
-        t1.format AS format, t1.folder AS folder, t1.filename AS filename
+        t1.format AS format, t1.folder AS folder, t1.filename AS filename, t1.script AS script
         from oge_task_management AS t1
         where 1=1 AND t1.user_name = #{userName}
         <if test="state !=''">
