@@ -51,6 +51,7 @@ public class TaskManagementController {
         String userName = taskRequest.getUserName();
         String filename = taskRequest.getFilename();
         String format = taskRequest.getFormat();
+        String script = taskRequest.getScript();
 
         String userId = taskManagementService.getUserIdByUserName(userName);
         String folder = "result";
@@ -65,6 +66,7 @@ public class TaskManagementController {
         task.setFolder(folder);
         task.setFilename(filename);
         task.setFormat(format);
+        task.setScript(script);
 
 //        根据batchId从redis中获取workTaskJSON
         String workTaskJSON = redisUtil.getValueByKey(DagId);

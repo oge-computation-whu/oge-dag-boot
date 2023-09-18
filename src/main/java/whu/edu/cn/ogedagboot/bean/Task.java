@@ -41,6 +41,8 @@ public class Task {
     private String folder;
     @ApiModelProperty(value = "输出文件名")
     private String filename;
+    @ApiModelProperty(value = "代码内容")
+    private String script;
 
     public String getId() {
         return id;
@@ -176,5 +178,13 @@ public class Task {
 
     public void setFilename(String filename) {
         this.filename = filename;
+    }
+
+    public String getScript() {
+        return script;
+    }
+
+    public void setScript(String script) {
+        this.script = script;
     }
 }

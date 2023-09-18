@@ -21,4 +21,6 @@ public class TaskRequest {
     private String format;
     @ApiModelProperty(value = "输出文件名")
     private String filename;
+    @ApiModelProperty(value = "代码内容")
+    private String script;
 }

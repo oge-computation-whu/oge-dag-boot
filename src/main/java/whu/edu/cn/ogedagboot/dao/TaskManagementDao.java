@@ -39,10 +39,11 @@ public interface TaskManagementDao {
             "description,\n" +
             "format,\n" +
             "folder,\n" +
-            "filename\n" +
+            "filename,\n" +
+            "script\n" +
             ") values (#{id},#{DagId},#{batchSessionId},#{state},#{taskName}," +
             "#{crs},#{scale},#{userId},#{userName},#{description},#{format}," +
-            "#{folder},#{filename})")
+            "#{folder},#{filename},#{script})")
     void addTaskRecord(Task task);
 
     /**
