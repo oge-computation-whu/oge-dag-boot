@@ -3,7 +3,6 @@ package whu.edu.cn.ogedagboot.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -13,6 +12,7 @@ import whu.edu.cn.ogedagboot.ResponseBody.OGEScriptExecuteResponse;
 import whu.edu.cn.ogedagboot.bean.WebSocket;
 import whu.edu.cn.ogedagboot.util.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.time.LocalDateTime;
@@ -32,16 +32,16 @@ import static whu.edu.cn.ogedagboot.util.SparkLauncherUtil.sparkSubmitTriggerBat
 public class JsonReceiverController {
 
 
-    @Autowired
+    @Resource
     private WebSocket webSocket;
 
-    @Autowired
+    @Resource
     private JedisPool jedisPool;
 
-    @Autowired
+    @Resource
     private RedisUtil redisUtil;
 
-    @Autowired
+    @Resource
     private ShUtil shUtil;
 
     @PostMapping("/saveDagJson")

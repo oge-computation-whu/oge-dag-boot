@@ -1,6 +1,5 @@
 package whu.edu.cn.ogedagboot.util;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +9,6 @@ import whu.edu.cn.ogedagboot.ResponseBody.OGEScriptExecuteResponse;
 import whu.edu.cn.ogedagboot.util.entity.MatchResult;
 
 import java.io.*;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -23,13 +20,15 @@ import java.util.regex.Pattern;
 @Slf4j
 @Component
 public class ShUtil {
+////
+//    @Value("${python-file.execute-sh}")
+//    private String executeSh;
+//
+//    @Value("${python-file.store-dir}")
+//    private String storeDir;
 
-    @Value(value = "${python.execute-sh}")
-    String executeSh;
-
-    @Value(value = "${python.store-dir}")
-    String storeDir;
-
+    private String executeSh = "/home/oge/oge-server/python-server/ogeScriptExecute.sh";
+    private String storeDir = "/home/oge/oge-server/python-server/oge-script/";
     /**
      *  call the shell
      * @param builder the command
