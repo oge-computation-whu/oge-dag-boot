@@ -10,7 +10,7 @@ server:
 spring:
   redis:
     database: 0
-    host: 125.220.153.26
+    host: 120.48.147.38
     lettuce:
       pool:
         max-active: 8   #最大连接数据库连接数,设 0 为没有限制
@@ -21,7 +21,7 @@ spring:
     password: 'ypfamily608'
     port: 6379
   datasource:
-    url: jdbc:postgresql://125.220.153.23:30865/oge
+    url: jdbc:postgresql://120.48.44.57:3306/oge
     driver-class-name: org.postgresql.Driver
     username: oge
     password: ypfamily608
@@ -31,6 +31,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         hbm2ddl:
           auto: update
+
 python:
   #  execute-sh: /home/geocube/oge/oge-server/python-server/ogescript_execute.sh
   #  store-dir: /home/geocube/oge/oge-server/python-server/python-script/

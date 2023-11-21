@@ -24,11 +24,11 @@ import java.util.regex.Pattern;
 @Component
 public class ShUtil {
 
-    @Value(value = "${python.execute-sh}")
-    String executeSh;
+//    @Value(value = "${python.execute-sh}")
+    String executeSh = "/home/oge/oge-server/python-server/ogeScriptExecute.sh";
 
-    @Value(value = "${python.store-dir}")
-    String storeDir;
+//    @Value(value = "${python.store-dir}")
+    String storeDir = "/home/oge/oge-server/python-server/oge-script/";
 
     /**
      *  call the shell

@@ -14,6 +14,10 @@ import static whu.edu.cn.ogedagboot.util.SSHClientUtil.runCmd;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.versouSshUtil;
 
 public class LivyUtil {
+    private final static String COMPUTATION_JAR_PATH = "local:/root/storage/dag-boot/oge-computation_ogc.jar";
+    private final static String SPARK_DRIVER_EXTRA_CLASS_PATH = "local:/root/storage/jars/*";
+    private final static String SPARK_EXECUTOR_EXTRA_CLASS_PATH = "local:/root/storage/jars/*";
+
     public static void main(String[] args) {
         initLivy();
         //testLivy();
@@ -54,11 +58,11 @@ public class LivyUtil {
             body.put("executorCores", 2);
             body.put("executorMemory", "3g");
             body.put("numExecutors", 5);
-            String[] str = {"local:/mnt/storage/dag-boot/oge-computation_ogc.jar"};
+            String[] str = {COMPUTATION_JAR_PATH};
             body.put("jars", str);
             JSONObject bodyChildren = new JSONObject();
-            bodyChildren.put("spark.driver.extraClassPath", "local:/root/spark/jars/*");
-            bodyChildren.put("spark.executor.extraClassPath", "local:/root/spark/jars/*");
+            bodyChildren.put("spark.driver.extraClassPath", SPARK_DRIVER_EXTRA_CLASS_PATH);
+            bodyChildren.put("spark.executor.extraClassPath", SPARK_EXECUTOR_EXTRA_CLASS_PATH);
             body.put("conf", bodyChildren);
             String param = body.toJSONString();
             String postSt = sendPost(LIVY_URL + "/sessions", param);
@@ -97,11 +101,11 @@ public class LivyUtil {
                 body.put("executorCores", 8);
                 body.put("executorMemory", "8g");
                 body.put("numExecutors", 1);
-                String[] str = {"local:/mnt/storage/dag-boot/oge-computation_ogc.jar"};
+                String[] str = {COMPUTATION_JAR_PATH};
                 body.put("jars", str);
                 JSONObject bodyChildren = new JSONObject();
-                bodyChildren.put("spark.driver.extraClassPath", "local:/root/spark/jars/*");
-                bodyChildren.put("spark.executor.extraClassPath", "local:/root/spark/jars/*");
+                bodyChildren.put("spark.driver.extraClassPath", SPARK_DRIVER_EXTRA_CLASS_PATH);
+                bodyChildren.put("spark.executor.extraClassPath", SPARK_EXECUTOR_EXTRA_CLASS_PATH);
                 body.put("conf", bodyChildren);
                 String param = body.toJSONString();
                 String postSt = sendPost(LIVY_URL + "/sessions", param);
@@ -200,7 +204,7 @@ public class LivyUtil {
         args.add(format);
 
         body.put("args", args);
-        body.put("file", "local:/mnt/storage/dag-boot/oge-computation_ogc.jar");
+        body.put("file", COMPUTATION_JAR_PATH);
         body.put("className", "whu.edu.cn.trigger.TriggerBatch");
         body.put("driverCores", 2);
         body.put("driverMemory", "2g");
@@ -209,8 +213,8 @@ public class LivyUtil {
         body.put("numExecutors", 3);
 
         JSONObject bodyChildren = new JSONObject();
-        bodyChildren.put("spark.driver.extraClassPath", "local:/root/spark/jars/*");
-        bodyChildren.put("spark.executor.extraClassPath", "local:/root/spark/jars/*");
+        bodyChildren.put("spark.driver.extraClassPath", SPARK_DRIVER_EXTRA_CLASS_PATH);
+        bodyChildren.put("spark.executor.extraClassPath", SPARK_EXECUTOR_EXTRA_CLASS_PATH);
         body.put("conf", bodyChildren);
 
         //发送post /batches请求
