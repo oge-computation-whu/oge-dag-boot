@@ -7,6 +7,14 @@ server:
     relaxed-query-chars: [ '|','{','}','[',']' ]
     relaxed-path-chars: [ '|','{','}','[',']' ]
 
+mybatis:
+  configuration:
+    mapUnderscoreToCamelCase: true
+  mapper-locations: classpath*:whu/edu/cn/ogedagboot/**/xml/*Dao.xml
+
+mybatis-plus:
+  mapper-locations: classpath*:whu/edu/cn/ogedagboot/**/xml/*Dao.xml
+
 spring:
   redis:
     database: 0
@@ -35,19 +43,6 @@ spring:
 python:
   execute-sh: /home/oge/oge-server/python-server/ogeScriptExecute.sh
   store-dir: /home/oge/oge-server/python-server/oge-script/
-
-mybatis:
-  configuration:
-    mapUnderscoreToCamelCase: true
-  #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-  mapper-locations: classpath*:whu/edu/cn/ogedagboot/**/xml/*Dao.xml
-
-mybatis-plus:
-  mapper-locations: classpath*:whu/edu/cn/ogedagboot/**/xml/*Dao.xml
-  #  global-config:
-  #configuration:
-  #这个配置会将执行的sql打印出来，在开发或测试的时候可以用
-  #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 livy:
   host: 180.76.55.162
