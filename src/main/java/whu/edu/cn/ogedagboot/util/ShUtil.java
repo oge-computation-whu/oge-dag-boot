@@ -1,6 +1,5 @@
 package whu.edu.cn.ogedagboot.util;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +9,6 @@ import whu.edu.cn.ogedagboot.ResponseBody.OGEScriptExecuteResponse;
 import whu.edu.cn.ogedagboot.util.entity.MatchResult;
 
 import java.io.*;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -24,18 +21,28 @@ import java.util.regex.Pattern;
 @Component
 public class ShUtil {
 
-//    @Value(value = "${python.execute-sh}")
-    String executeSh = "/home/oge/oge-server/python-server/ogeScriptExecute.sh";
+    public static String executeSh;
+    public static String storeDir;
 
-//    @Value(value = "${python.store-dir}")
-    String storeDir = "/home/oge/oge-server/python-server/oge-script/";
+    @Value("${python.execute-sh}")
+    public void setExecuteSh(String executeSh) {
+        ShUtil.executeSh = executeSh;
+    }
+
+    @Value("${python.store-dir}")
+    public void setStoreDir(String storeDir) {
+        ShUtil.storeDir = storeDir;
+    }
+
+
 
     /**
-     *  call the shell
+     * call the shell
+     *
      * @param builder the command
      * @return if success
      */
-    public boolean callShell(ProcessBuilder builder){
+    public boolean callShell(ProcessBuilder builder) {
         String command = String.join(" ", builder.command());
         try {
             log.info("调用脚本程序" + command);
@@ -50,7 +57,7 @@ public class ShUtil {
             p.waitFor();
             log.info("脚本程序执行完毕");
             return true;
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             log.error(command + " execute fail");
             return false;
@@ -58,11 +65,12 @@ public class ShUtil {
     }
 
     /**
-     *  call the shell
+     * call the shell
+     *
      * @param builder the command
      * @return if success
      */
-    public String callShellForValue(ProcessBuilder builder){
+    public String callShellForValue(ProcessBuilder builder) {
         String command = String.join(" ", builder.command());
         StringBuilder output = new StringBuilder();
         try {
@@ -80,7 +88,7 @@ public class ShUtil {
             p.waitFor();
             log.info("脚本程序执行完毕");
             return output.toString();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             log.error(command + " execute fail");
             return output.toString();
@@ -89,10 +97,11 @@ public class ShUtil {
 
     /**
      * Execute the python file
+     *
      * @param code the code of python file
      * @return DAG params
      */
-    public OGEScriptExecuteResponse executeOGEScript(String code){
+    public OGEScriptExecuteResponse executeOGEScript(String code) {
         String pythonFilePath = formPythonFile(code);
 //        String output = code;
         String output = callShellForValue((new ProcessBuilder("bash", executeSh, pythonFilePath)));
@@ -102,7 +111,7 @@ public class ShUtil {
         List<String> dagList = matchResult1.getMatchList();
         output = matchResult1.getModifiedStr();
         JSONArray dagArray = new JSONArray();
-        for(String dag : dagList){
+        for (String dag : dagList) {
             JSONObject dagObj = JSONObject.parseObject(dag);
             dagArray.add(JSONObject.parseObject(dag));
         }
@@ -112,7 +121,7 @@ public class ShUtil {
         output = matchResult2.getModifiedStr();
         JSONObject spaceObj = new JSONObject();
         // if the length of spaceParamsList don't equal 0
-        if(spaceParamsList.size() != 0){
+        if (spaceParamsList.size() != 0) {
             spaceObj = JSONObject.parseObject(spaceParamsList.get(spaceParamsList.size() - 1));
         }
         OGEScriptExecuteResponse ogeScriptExecuteResponse = new OGEScriptExecuteResponse();
@@ -125,7 +134,8 @@ public class ShUtil {
 
     /**
      * extract value from the output string of python file
-     * @param input input string
+     *
+     * @param input   input string
      * @param pattern the match pattern
      * @return extracted value
      */
@@ -144,10 +154,11 @@ public class ShUtil {
 
     /**
      * form the python file path
+     *
      * @param pythonCode the input python code
      * @return python file path
      */
-    public String formPythonFile(String pythonCode){
+    public String formPythonFile(String pythonCode) {
         // 获取当前时间
         LocalDateTime currentTime = LocalDateTime.now();
         // 定义时间戳格式
@@ -157,7 +168,7 @@ public class ShUtil {
         String pythonFilePath = storeDir + timestamp + ".py";
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(pythonFilePath))) {
             writer.write(pythonCode);
-            Process process = Runtime.getRuntime().exec("chmod 777 "+ pythonFilePath);
+            Process process = Runtime.getRuntime().exec("chmod 777 " + pythonFilePath);
             process.waitFor();
             return pythonFilePath;
         } catch (IOException | InterruptedException e) {
@@ -166,7 +177,7 @@ public class ShUtil {
         }
     }
 
-    public static void main(String [] args) throws IOException {
+    public static void main(String[] args) throws IOException {
         ShUtil shUtil = new ShUtil();
 //        try {
 ////            String codeStr = "import oge.mapclient\\n# 初始化\\noge.initialize()\\nservice = oge.Service.initialize()\\n# Modis数据集获取\\nmodisCollection1 = service.getCoverageCollection(productID=\"MOD13Q1_061\", bbox=[73.62, 18.19, 134.7601467382, 53.54],\\n                                                    datetime=[\"2022-03-06 00:00:00\", \"2022-03-06 00:00:00\"])\\nmodisCollection2 = modisCollection1.subCollection(\\n    filter=oge.Filter([oge.Filter.equals(\"crs\", \"EPSG:4326\"), oge.Filter.equals(\"measurementName\", \"NDVI\")]))\\n# 二值化\\nbinary_Collection = service.getProcess(\"CoverageCollection.binarization\").execute(modisCollection2, 220)\\n# 地图可视化\\nvis_params = {'min': 0, 'max': 255, 'method': \"timeseries\", 'palette': \"green\"}\\noge.mapclient.centerMap(113.5, 24.5, 5)\\nbinary_Collection.styles(vis_params).getMap()\\n   ";
@@ -194,17 +205,17 @@ public class ShUtil {
         String userId = "wkx";
         // 时间戳
         long timeMillis = System.currentTimeMillis();
-        for(int i=0; i < dagArray.size(); i++){
+        for (int i = 0; i < dagArray.size(); i++) {
             String dagId = userId + "_" + timeMillis + "_" + i;
             JSONObject dagObj = dagArray.getJSONObject(i);
-            if(dagObj.containsKey("isBatch") && dagObj.getInteger("isBatch") == 0){
+            if (dagObj.containsKey("isBatch") && dagObj.getInteger("isBatch") == 0) {
                 dagsObj.put("taskId", dagId);
                 dagsObj.put("isBatch", true);
                 LocalDateTime dateTime = LocalDateTime.ofEpochSecond(timeMillis / 1000, 0, ZoneOffset.UTC);
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 String formattedDateTime = dateTime.format(formatter);
                 dagsObj.put("creatTime", formattedDateTime);
-            }else{
+            } else {
                 dagsObj.put("isBatch", false);
                 dagsObj.put(dagArray.getJSONObject(i).getString("layerName"), dagId);
             }

@@ -3,6 +3,7 @@ package whu.edu.cn.ogedagboot.util;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import whu.edu.cn.ogedagboot.controller.CallbackController;
 
 import java.util.ArrayList;
@@ -13,10 +14,8 @@ import static whu.edu.cn.ogedagboot.util.HttpRequestUtil.*;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.runCmd;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.versouSshUtil;
 
+@Slf4j
 public class LivyUtil {
-    private final static String COMPUTATION_JAR_PATH = "local:/root/storage/dag-boot/oge-computation_ogc.jar";
-    private final static String SPARK_DRIVER_EXTRA_CLASS_PATH = "local:/root/storage/jars/*";
-    private final static String SPARK_EXECUTOR_EXTRA_CLASS_PATH = "local:/root/storage/jars/*";
 
     public static void main(String[] args) {
         initLivy();
@@ -31,7 +30,7 @@ public class LivyUtil {
             body.put("code", code);
             body.put("kind", "spark");
             String parameter = body.toJSONString();
-            String outputString = sendPost(LIVY_URL + "/sessions/" + i + "/statements", parameter);
+            String outputString = sendPost("http://" + LIVY_HOST + ":" + LIVY_PORT + "/sessions/" + i + "/statements", parameter);
         }
     }
 
@@ -65,7 +64,7 @@ public class LivyUtil {
             bodyChildren.put("spark.executor.extraClassPath", SPARK_EXECUTOR_EXTRA_CLASS_PATH);
             body.put("conf", bodyChildren);
             String param = body.toJSONString();
-            String postSt = sendPost(LIVY_URL + "/sessions", param);
+            String postSt = sendPost("http://" + LIVY_HOST + ":" + LIVY_PORT + "/sessions", param);
             System.out.println("postSt = " + postSt);
             try {
                 Thread.sleep(2000);
@@ -76,7 +75,7 @@ public class LivyUtil {
     }
 
     public static String livyTrigger(String workTaskJSON, String originTaskID, String userId) {
-        String baseUrl = LIVY_URL;
+        String baseUrl = "http://" + LIVY_HOST + ":" + LIVY_PORT;
         int sessionNumExpected = LIVY_SESSION_NUM;
 
         // 获取所有的session
@@ -96,10 +95,10 @@ public class LivyUtil {
             for (int i = 0; i < sessionNumExpected - sessionNum; i++) {
                 JSONObject body = new JSONObject();
                 body.put("kind", "spark");
-                body.put("driverCores", 2);
-                body.put("driverMemory", "2g");
-                body.put("executorCores", 8);
-                body.put("executorMemory", "8g");
+                body.put("driverCores", DRIVER_CORES);
+                body.put("driverMemory", DRIVER_MEMORY);
+                body.put("executorCores", EXECUTOR_CORES);
+                body.put("executorMemory", EXECUTOR_MEMORY);
                 body.put("numExecutors", 1);
                 String[] str = {COMPUTATION_JAR_PATH};
                 body.put("jars", str);
@@ -108,7 +107,7 @@ public class LivyUtil {
                 bodyChildren.put("spark.executor.extraClassPath", SPARK_EXECUTOR_EXTRA_CLASS_PATH);
                 body.put("conf", bodyChildren);
                 String param = body.toJSONString();
-                String postSt = sendPost(LIVY_URL + "/sessions", param);
+                String postSt = sendPost("http://" + LIVY_HOST + ":" + LIVY_PORT + "/sessions", param);
                 System.out.println("postSt = " + postSt);
             }
         }
@@ -206,10 +205,10 @@ public class LivyUtil {
         body.put("args", args);
         body.put("file", COMPUTATION_JAR_PATH);
         body.put("className", "whu.edu.cn.trigger.TriggerBatch");
-        body.put("driverCores", 2);
-        body.put("driverMemory", "2g");
-        body.put("executorCores", 8);
-        body.put("executorMemory", "8g");
+        body.put("driverCores", DRIVER_CORES);
+        body.put("driverMemory", DRIVER_MEMORY);
+        body.put("executorCores", EXECUTOR_CORES);
+        body.put("executorMemory", EXECUTOR_MEMORY);
         body.put("numExecutors", 3);
 
         JSONObject bodyChildren = new JSONObject();
@@ -219,7 +218,9 @@ public class LivyUtil {
 
         //发送post /batches请求
         String param = body.toJSONString();
-        String postSt = sendPost(LIVY_URL + "/batches", param);
+        log.info("开始发送batches请求，参数：{}", param);
+        String postSt = sendPost("http://" + LIVY_HOST + ":" + LIVY_PORT + "/batches", param);
+        log.info("batches响应结果：{}", postSt);
         System.out.println("postSt = " + postSt);
 
         //将返回的batch转成JSONObject
@@ -234,7 +235,7 @@ public class LivyUtil {
     }
 
     public static String getBatchesState(int batchSessionId) {
-        String baseUrl = LIVY_URL;
+        String baseUrl = "http://" + LIVY_HOST + ":" + LIVY_PORT;
         String stateStr = sendGet(baseUrl + "/batches/" + batchSessionId + "/state");
         JSONObject stateJSONObject = JSON.parseObject(stateStr);
         String state = stateJSONObject.getString("state");

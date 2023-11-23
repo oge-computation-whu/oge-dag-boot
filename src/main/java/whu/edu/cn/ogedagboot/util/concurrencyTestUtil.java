@@ -9,7 +9,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-import static whu.edu.cn.ogedagboot.util.GlobalConstantUtil.LIVY_URL;
+import static whu.edu.cn.ogedagboot.util.GlobalConstantUtil.LIVY_HOST;
+import static whu.edu.cn.ogedagboot.util.GlobalConstantUtil.LIVY_PORT;
 import static whu.edu.cn.ogedagboot.util.HttpRequestUtil.sendPost;
 
 public class concurrencyTestUtil {
@@ -44,7 +45,7 @@ public class concurrencyTestUtil {
     }
 
     public static void concurrencyLivyTrigger(String workTaskJSON, String originTaskID, String sessionId) {
-        String baseUrl = LIVY_URL;
+        String baseUrl = "http://" + LIVY_HOST + ":" + LIVY_PORT;
 
         workTaskJSON = BuildStrUtil.convertStr(workTaskJSON);
         // 提交任务给session
