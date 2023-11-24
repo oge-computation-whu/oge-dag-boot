@@ -49,7 +49,7 @@ livy:
   port: 8998
   user: root
   pwd: Ypfamily608!
-  sessionNum: 50
+  sessionNum: 40
 
 ogc:
   computationJarPath: local:/root/storage/dag-boot/oge-computation_ogc.jar
