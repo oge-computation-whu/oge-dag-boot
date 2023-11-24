@@ -11,6 +11,7 @@ import whu.edu.cn.ogedagboot.RequestBody.OGEModelExecuteBody;
 import whu.edu.cn.ogedagboot.RequestBody.OGEScriptExecuteBody;
 import whu.edu.cn.ogedagboot.ResponseBody.OGEScriptExecuteResponse;
 import whu.edu.cn.ogedagboot.bean.WebSocket;
+import whu.edu.cn.ogedagboot.dao.TaskManagementDao;
 import whu.edu.cn.ogedagboot.util.*;
 
 import javax.servlet.http.HttpSession;
@@ -30,7 +31,8 @@ import static whu.edu.cn.ogedagboot.util.SparkLauncherUtil.sparkSubmitTriggerBat
 @CrossOrigin(origins = "*", maxAge = 3600)
 
 public class JsonReceiverController {
-
+    @Autowired
+    private TaskManagementDao taskManagementDao;
 
     @Autowired
     private WebSocket webSocket;
@@ -271,7 +273,21 @@ public class JsonReceiverController {
         if (dagWithNameObj.containsKey("layerName") && dagWithNameObj.getString("layerName") != null) {
             dagObj.put("layerName", dagWithNameObj.getString("layerName"));
         }
+        redisUtil.saveKeyValue("api:count", String.valueOf(
+                Integer.parseInt(redisUtil.getValueByKey("api:count")) + 1
+        ));
         log.info(dagObj.toJSONString());
         return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, dagObj), dagId, userId);
+    }
+
+    @PostMapping("/info")
+    public JSONObject getInformationSummary() {
+        JSONObject ans = new JSONObject();
+        ans.put("modelCount", taskManagementDao.countModel());
+        ans.put("totalSpace", 698.1027158917859);
+        ans.put("onlineData", 36.69250350394577);
+        ans.put("apiCount", Integer.parseInt(redisUtil.getValueByKey("api:count")));
+
+        return ans;
     }
 }

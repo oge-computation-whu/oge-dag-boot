@@ -83,4 +83,6 @@ public interface TaskManagementDao {
     void updateTaskRecordOfEndTimeAndRunTime(@Param("endTime") Timestamp endTime, @Param("runTime") Double runTime,
                                              @Param("DagId") String DagId);
 
+    @Select("select count(id) from oge_model_resource where source in ('OGE', 'GRASS', 'QGIS')")
+    Integer countModel();
 }
