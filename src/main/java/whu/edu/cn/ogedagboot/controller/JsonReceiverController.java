@@ -281,7 +281,7 @@ public class JsonReceiverController {
         redisUtil.saveKeyValue("api:count", String.valueOf(
                 Integer.parseInt(redisUtil.getValueByKey("api:count")) + 1
         ));
-        log.info(dagObj.toJSONString());
+        log.info("dagObj:{}", dagObj.toJSONString());
         return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, dagObj), dagId, userId);
     }
 
@@ -297,9 +297,10 @@ public class JsonReceiverController {
     }
 
     @DeleteMapping("/cancelBatch")
-    public String getInformationSummary(@RequestParam("batchSessionId") int batchSessionId) {
+    public String cancelBatch(@RequestParam("batchSessionId") int batchSessionId,
+                              @RequestParam("dagId") String dagId) {
         deleteBatchSession(batchSessionId);
-
+        taskManagementDao.updateTaskRecordOfstate("dead", dagId);
         return httpStringUtil.ok("批处理任务取消成功");
     }
 }
