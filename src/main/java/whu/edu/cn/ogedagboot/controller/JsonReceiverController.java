@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import static whu.edu.cn.ogedagboot.util.LivyUtil.deleteBatchSession;
 import static whu.edu.cn.ogedagboot.util.LivyUtil.livyTrigger;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.runCmd;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.versouSshUtil;
@@ -45,6 +46,8 @@ public class JsonReceiverController {
 
     @Autowired
     private ShUtil shUtil;
+    @Autowired
+    private HttpStringUtil httpStringUtil;
 
     @PostMapping("/saveDagJson")
     public void saveDagJson(@RequestBody String params, HttpSession httpSession) {
@@ -280,7 +283,7 @@ public class JsonReceiverController {
         return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, dagObj), dagId, userId);
     }
 
-    @PostMapping("/info")
+    @GetMapping("/info")
     public JSONObject getInformationSummary() {
         JSONObject ans = new JSONObject();
         ans.put("modelCount", taskManagementDao.countModel());
@@ -289,5 +292,12 @@ public class JsonReceiverController {
         ans.put("apiCount", Integer.parseInt(redisUtil.getValueByKey("api:count")));
 
         return ans;
+    }
+
+    @DeleteMapping("/cancelBatch")
+    public String getInformationSummary(@RequestParam("batchSessionId") int batchSessionId) {
+        deleteBatchSession(batchSessionId);
+
+        return httpStringUtil.ok("批处理任务取消成功");
     }
 }

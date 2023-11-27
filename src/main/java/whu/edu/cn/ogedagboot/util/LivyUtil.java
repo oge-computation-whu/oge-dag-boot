@@ -242,4 +242,8 @@ public class LivyUtil {
 
         return state;
     }
+
+    public static void deleteBatchSession(int batchSessionId) {
+        sendDelete("http://" + LIVY_HOST + ":" + LIVY_PORT + "/sessions/" + batchSessionId);
+    }
 }

@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import whu.edu.cn.ogedagboot.bean.Task;
 import whu.edu.cn.ogedagboot.dao.TaskManagementDao;
+import whu.edu.cn.ogedagboot.util.HttpRequestUtil;
 import whu.edu.cn.ogedagboot.util.HttpStringUtil;
 import whu.edu.cn.ogedagboot.util.LivyUtil;
 
@@ -224,6 +225,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
                 if (secondsPassed >= 600) { // 如果满足条件或超过10分钟，退出
                     System.out.println("Time out");
                     taskManagementDao.updateTaskRecordOfstate("dead", DagId);
+                    LivyUtil.deleteBatchSession(batchSessionId);
                     timer.cancel();
                 }
             }
