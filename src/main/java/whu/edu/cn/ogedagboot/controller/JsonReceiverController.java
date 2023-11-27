@@ -19,6 +19,8 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 import static whu.edu.cn.ogedagboot.util.LivyUtil.deleteBatchSession;
 import static whu.edu.cn.ogedagboot.util.LivyUtil.livyTrigger;
@@ -284,14 +286,14 @@ public class JsonReceiverController {
     }
 
     @GetMapping("/info")
-    public JSONObject getInformationSummary() {
-        JSONObject ans = new JSONObject();
+    public String getInformationSummary() {
+        Map<String, Object> ans = new HashMap<>();
         ans.put("modelCount", taskManagementDao.countModel());
         ans.put("totalSpace", 698.1027158917859);
         ans.put("onlineData", 36.69250350394577);
         ans.put("apiCount", Integer.parseInt(redisUtil.getValueByKey("api:count")));
 
-        return ans;
+        return httpStringUtil.ok("获取首页统计信息", ans);
     }
 
     @DeleteMapping("/cancelBatch")
