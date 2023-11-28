@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import whu.edu.cn.ogedagboot.bean.StateRequest;
 import whu.edu.cn.ogedagboot.bean.Task;
 import whu.edu.cn.ogedagboot.bean.TaskRequest;
 import whu.edu.cn.ogedagboot.service.TaskManagementService;
@@ -122,24 +123,40 @@ public class TaskManagementController {
 
 
     /**
-     * 更新任务状态
+     * 获取任务状态
      */
-    @PutMapping(value = "/updateSate")
-    @ApiOperation("更新任务状态")
-    @ApiImplicitParam(name = "id", value = "DAG的编号", required = true)
-    public String updateTaskRecordOfstate(@RequestParam("id") String DagId) {
-        Task task = taskManagementService.getTaskInfoByDagId(DagId);
+    @GetMapping(value = "/getState")
+    @ApiOperation("获取任务状态")
+    @ApiImplicitParam(name = "dagId", value = "DAG的编号", required = true)
+    public String getTaskRecordOfState(@RequestParam("dagId") String dagId) {
+        Task task = taskManagementService.getTaskInfoByDagId(dagId);
         try {
-            System.out.println("更新一条任务记录：" + task.getId());
+            System.out.println("获取一条任务记录：" + task.getId());
             return task.getState();
-
         } catch (Exception e) {
             e.printStackTrace();
             log.error("Error");
             return httpStringUtil.failure("更新任务状态失败");
         }
+    }
 
-
+    /**
+     * 更新任务状态
+     */
+    @PostMapping(value = "/updateState")
+    @ApiOperation("更新任务状态")
+    @ApiImplicitParam(name = "dagId", value = "DAG的编号", required = true)
+    public String updateStatus(@RequestBody StateRequest request) {
+        Task task = taskManagementService.getTaskInfoByDagId(request.getDagId());
+        try {
+            System.out.println("更新一条任务记录：" + task.getId());
+            taskManagementService.updateTaskRecordOfstate(request.getState(), request.getDagId());
+            return task.getState();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("Error");
+            return httpStringUtil.failure("更新任务状态失败");
+        }
     }
 
     /**
