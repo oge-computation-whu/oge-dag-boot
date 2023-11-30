@@ -54,10 +54,16 @@ public interface TaskManagementDao {
 
 
     /**
-     * 更新任务状态
+     * 根据dagId更新任务状态
      */
     @Update("update oge_task_management set state=#{state} where dag_id=#{DagId}")
-    boolean updateTaskRecordOfstate(@Param("state") String state, @Param("DagId") String DagId);
+    boolean updateStateByDagId(@Param("state") String state, @Param("DagId") String DagId);
+
+    /**
+     * 根据batchSessionId更新任务状态
+     */
+    @Update("update oge_task_management set state=#{state} where batch_session_id=#{batchSessionId}")
+    boolean updateStateByBatchSessionId(@Param("state") String state, @Param("batchSessionId") String batchSessionId);
 
     /**
      * 根据user_name获取user_id

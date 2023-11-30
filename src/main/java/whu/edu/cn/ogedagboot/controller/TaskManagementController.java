@@ -141,22 +141,23 @@ public class TaskManagementController {
     }
 
     /**
-     * 更新任务状态
+     * 根据dagId更新任务状态
      */
-    @PostMapping(value = "/updateState")
-    @ApiOperation("更新任务状态")
-    @ApiImplicitParam(name = "dagId", value = "DAG的编号", required = true)
-    public String updateStatus(@RequestBody StateRequest request) {
-        Task task = taskManagementService.getTaskInfoByDagId(request.getDagId());
-        try {
-            System.out.println("更新一条任务记录：" + task.getId());
-            taskManagementService.updateTaskRecordOfstate(request.getState(), request.getDagId());
-            return task.getState();
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error("Error");
-            return httpStringUtil.failure("更新任务状态失败");
-        }
+    @PostMapping(value = "/updateStateByDagId")
+    @ApiOperation("根据dagId更新任务状态")
+    public String updateStateByDagId(@RequestBody StateRequest request) {
+        taskManagementService.updateStateByDagId(request.getState(), request.getDagId());
+        return httpStringUtil.ok("更新成功");
+    }
+
+    /**
+     * 根据batchSessionId更新任务状态
+     */
+    @PostMapping(value = "/updateStateByBatchSessionId")
+    @ApiOperation("根据batchSessionId更新任务状态")
+    public String updateStateByBatchSessionId(@RequestBody StateRequest request) {
+        taskManagementService.updateStateByBatchSessionId(request.getState(), request.getBatchSessionId());
+        return httpStringUtil.ok("更新成功");
     }
 
     /**

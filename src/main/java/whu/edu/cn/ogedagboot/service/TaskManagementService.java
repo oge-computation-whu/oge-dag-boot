@@ -1,10 +1,8 @@
 package whu.edu.cn.ogedagboot.service;
 
-import com.alibaba.fastjson.JSONObject;
 import whu.edu.cn.ogedagboot.bean.Task;
 
 import java.sql.Timestamp;
-import java.util.List;
 
 public interface TaskManagementService {
 
@@ -29,9 +27,14 @@ public interface TaskManagementService {
     boolean deteleTaskRecord(String DagId);
 
     /**
-     * 更新任务状态
+     * 根据dagId更新任务状态
      */
-    String updateTaskRecordOfstate(String state, String DagId);
+    String updateStateByDagId(String state, String DagId);
+
+    /**
+     * 根据batchSessionId更新任务状态
+     */
+    String updateStateByBatchSessionId(String state, String batchSessionId);
 
 
     /**

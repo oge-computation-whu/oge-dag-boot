@@ -300,7 +300,7 @@ public class JsonReceiverController {
     public String cancelBatch(@RequestParam("batchSessionId") int batchSessionId,
                               @RequestParam("dagId") String dagId) {
         deleteBatchSession(batchSessionId);
-        taskManagementDao.updateTaskRecordOfstate("dead", dagId);
+        taskManagementDao.updateStateByDagId("dead", dagId);
         return httpStringUtil.ok("批处理任务取消成功");
     }
 }

@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class StateRequest {
     private String state;
+    private String batchSessionId;
     private String dagId;
 }

@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import whu.edu.cn.ogedagboot.bean.Task;
 import whu.edu.cn.ogedagboot.dao.TaskManagementDao;
-import whu.edu.cn.ogedagboot.util.HttpRequestUtil;
 import whu.edu.cn.ogedagboot.util.HttpStringUtil;
 import whu.edu.cn.ogedagboot.util.LivyUtil;
 
@@ -55,9 +54,8 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     }
 
     @Override
-    public String updateTaskRecordOfstate(String state, String DagId) {
-
-        boolean flag = taskManagementDao.updateTaskRecordOfstate(state, DagId);
+    public String updateStateByDagId(String state, String DagId) {
+        boolean flag = taskManagementDao.updateStateByDagId(state, DagId);
         if (flag) {
             return httpStringUtil.ok("成功更新任务状态", state);
         } else {
@@ -65,6 +63,15 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         }
     }
 
+    @Override
+    public String updateStateByBatchSessionId(String state, String batchSessionId) {
+        boolean flag = taskManagementDao.updateStateByBatchSessionId(state, batchSessionId);
+        if (flag) {
+            return httpStringUtil.ok("成功更新任务状态", state);
+        } else {
+            return httpStringUtil.failure("更新任务状态失败");
+        }
+    }
 
     @Override
     public String getTaskRecordByState(String state) {
@@ -206,7 +213,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
                 secondsPassed++;
                 state[0] = LivyUtil.getBatchesState(batchSessionId);
                 System.out.println("status:" + state[0]);
-                taskManagementDao.updateTaskRecordOfstate(state[0], DagId);
+                taskManagementDao.updateStateByDagId(state[0], DagId);
                 switch (state[0]) {
                     case "success":
                         Task task = taskManagementDao.getTaskInfoByDagId(DagId);
@@ -224,7 +231,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
                 }
                 if (secondsPassed >= 600) { // 如果满足条件或超过10分钟，退出
                     System.out.println("Time out");
-                    taskManagementDao.updateTaskRecordOfstate("dead", DagId);
+                    taskManagementDao.updateStateByDagId("dead", DagId);
                     LivyUtil.deleteBatchSession(batchSessionId);
                     timer.cancel();
                 }
