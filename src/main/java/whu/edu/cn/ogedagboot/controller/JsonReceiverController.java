@@ -194,6 +194,13 @@ public class JsonReceiverController {
     @PostMapping("/executeCode")
     public JSONObject executeOGEScript(@RequestBody OGEScriptExecuteBody ogeScriptExecuteBody) {
         String code = ogeScriptExecuteBody.getCode();
+        if (!codeCheck(code)) {
+            JSONObject ansObj = new JSONObject();
+            ansObj.put("code", 406);
+            ansObj.put("msg", "代码包含危险操作");
+            return ansObj;
+        }
+
         String userId = ogeScriptExecuteBody.getUserId();
         // 时间戳
         long timeMillis = System.currentTimeMillis();
@@ -227,6 +234,20 @@ public class JsonReceiverController {
         resultObj.put("dags", dagsObj);
         resultObj.put("log", ogeScriptExecuteResponse.getLog());
         return resultObj;
+    }
+
+    protected boolean codeCheck(String code) {
+        String[] codeArray = code.split("\n");
+        for (String line : codeArray) {
+            if (line.contains("import")) {
+                int index = line.indexOf("import");
+                line = line.substring(index + 6).trim();
+                if (!line.equals("oge")) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
