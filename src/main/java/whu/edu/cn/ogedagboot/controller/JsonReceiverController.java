@@ -3,6 +3,7 @@ package whu.edu.cn.ogedagboot.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
@@ -229,6 +230,7 @@ public class JsonReceiverController {
                 dagsObj.put(dagArray.getJSONObject(i).getString("layerName"), dagId);
             }
             redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 3600 * 2);
+            log.info("缓存dagId：{}",dagId);
         }
         resultObj.put("spaceParams", spaceParamsObj);
         resultObj.put("dags", dagsObj);
@@ -299,9 +301,14 @@ public class JsonReceiverController {
         if (dagWithNameObj.containsKey("layerName") && dagWithNameObj.getString("layerName") != null) {
             dagObj.put("layerName", dagWithNameObj.getString("layerName"));
         }
-        redisUtil.saveKeyValue("api:count", String.valueOf(
-                Integer.parseInt(redisUtil.getValueByKey("api:count")) + 1
-        ));
+        
+        String apiCountStr = redisUtil.getValueByKey("api:count");
+        if(StringUtils.isNotEmpty(apiCountStr)){
+            redisUtil.saveKeyValue("api:count", String.valueOf(
+                    Integer.parseInt(apiCountStr) + 1
+            ));
+        }
+
         log.info("dagObj:{}", dagObj.toJSONString());
         return livyTrigger(BuildStrUtil.buildChildTaskJSON(level, spatialRange, dagObj), dagId, userId);
     }
@@ -312,7 +319,11 @@ public class JsonReceiverController {
         ans.put("modelCount", taskManagementDao.countModel());
         ans.put("totalSpace", 698.1027158917859);
         ans.put("onlineData", 36.69250350394577);
-        ans.put("apiCount", Integer.parseInt(redisUtil.getValueByKey("api:count")));
+        String apiCountStr = redisUtil.getValueByKey("api:count");
+        if(StringUtils.isNotEmpty(apiCountStr)){
+            ans.put("apiCount", Integer.parseInt(apiCountStr));
+        }
+
 
         return httpStringUtil.ok("获取首页统计信息", ans);
     }
