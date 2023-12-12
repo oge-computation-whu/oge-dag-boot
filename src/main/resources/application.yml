@@ -60,4 +60,10 @@ ogc:
   executorCores: 4
   executorMemory: 2g
 
+# 日志配置
+logging:
+  level:
+    whu.edu.cn: debug
+    org.springframework: warn
+
 
