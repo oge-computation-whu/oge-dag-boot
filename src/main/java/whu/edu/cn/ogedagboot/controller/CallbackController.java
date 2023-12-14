@@ -36,8 +36,8 @@ public class CallbackController {
                 JSONObject.parseObject(outJson).getString("workID"),
                 JSONObject.parseObject(outJson).getJSONObject("json").toJSONString()
         );
-        System.out.println("outJsonsOfTMS = " + outJsonsOfTMS);
-        System.out.println("url = " + outJson);
+//        System.out.println("outJsonsOfTMS = " + outJsonsOfTMS);
+//        System.out.println("url = " + outJson);
     }
 
 
