@@ -216,7 +216,7 @@ public class JsonReceiverController {
             if (dagObj.containsKey("isBatch") && dagObj.getInteger("isBatch") == 1) {
                 JSONObject taskObj = new JSONObject();
                 taskObj.put("isBatch", true);
-                LocalDateTime dateTime = LocalDateTime.ofEpochSecond(timeMillis / 1000, 0, ZoneOffset.UTC);
+                LocalDateTime dateTime = LocalDateTime.ofEpochSecond(timeMillis / 1000, 0, ZoneOffset.ofTotalSeconds(28800));
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 String formattedDateTime = dateTime.format(formatter);
                 taskObj.put("creatTime", formattedDateTime);
@@ -301,7 +301,7 @@ public class JsonReceiverController {
         if (dagWithNameObj.containsKey("layerName") && dagWithNameObj.getString("layerName") != null) {
             dagObj.put("layerName", dagWithNameObj.getString("layerName"));
         }
-        
+
         String apiCountStr = redisUtil.getValueByKey("api:count");
         if(StringUtils.isNotEmpty(apiCountStr)){
             redisUtil.saveKeyValue("api:count", String.valueOf(
