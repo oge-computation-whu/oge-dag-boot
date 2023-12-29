@@ -114,6 +114,9 @@ public class LivyUtil {
 
         // 检查session能否使用
         int sessionIdAvailable = -1;
+
+        //todo 打乱session列表顺序
+
         for (Integer integer : sessionIdList) {
             String sessionInfoString = sendGet(baseUrl + "/sessions/" + integer);
             JSONObject sessionInfoJson = JSON.parseObject(sessionInfoString);
@@ -142,6 +145,7 @@ public class LivyUtil {
         // 如果没有一个session是闲置的，则提示在排队中
         JSONObject resultJsonObject = new JSONObject();
         if (sessionIdAvailable == -1) {
+            //todo 无空闲session，随机推送
             resultJsonObject.put("status", "waiting");
             return resultJsonObject.toJSONString();
         } else {
