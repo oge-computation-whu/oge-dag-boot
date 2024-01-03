@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import whu.edu.cn.ogedagboot.controller.CallbackController;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Objects;
 
 import static whu.edu.cn.ogedagboot.util.GlobalConstantUtil.*;
@@ -116,6 +117,7 @@ public class LivyUtil {
         int sessionIdAvailable = -1;
 
         //todo 打乱session列表顺序
+        Collections.shuffle(sessionIdList);
 
         for (Integer integer : sessionIdList) {
             String sessionInfoString = sendGet(baseUrl + "/sessions/" + integer);
