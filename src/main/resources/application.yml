@@ -45,7 +45,7 @@ python:
   store-dir: /home/oge/oge-server/python-server/oge-script/
 
 livy:
-  host: 180.76.55.162
+  host: 192.168.80.3
   port: 8998
   user: root
   pwd: Ypfamily608!
