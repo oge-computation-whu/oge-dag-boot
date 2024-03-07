@@ -11,6 +11,7 @@ import redis.clients.jedis.JedisPool;
 import whu.edu.cn.ogedagboot.RequestBody.OGEModelExecuteBody;
 import whu.edu.cn.ogedagboot.RequestBody.OGEScriptExecuteBody;
 import whu.edu.cn.ogedagboot.ResponseBody.OGEScriptExecuteResponse;
+import whu.edu.cn.ogedagboot.bean.ResourceInfo;
 import whu.edu.cn.ogedagboot.bean.WebSocket;
 import whu.edu.cn.ogedagboot.dao.TaskManagementDao;
 import whu.edu.cn.ogedagboot.util.*;
@@ -21,8 +22,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import static whu.edu.cn.ogedagboot.constant.OgeConstants.OGE_FLOWSTATISTICS_KEYWORD_SAMPLECODE;
 import static whu.edu.cn.ogedagboot.util.LivyUtil.deleteBatchSession;
 import static whu.edu.cn.ogedagboot.util.LivyUtil.livyTrigger;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.runCmd;
@@ -51,6 +56,9 @@ public class JsonReceiverController {
     private ShUtil shUtil;
     @Autowired
     private HttpStringUtil httpStringUtil;
+
+    // 创建一个线程池，大小为10
+    ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     @PostMapping("/saveDagJson")
     public void saveDagJson(@RequestBody String params, HttpSession httpSession) {
@@ -194,6 +202,12 @@ public class JsonReceiverController {
      */
     @PostMapping("/executeCode")
     public JSONObject executeOGEScript(@RequestBody OGEScriptExecuteBody ogeScriptExecuteBody) {
+        executorService.submit(() -> {
+            //执行示例代码埋点
+            samplePoint(ogeScriptExecuteBody);
+            return "执行示例代码埋点成功";
+        });
+
         String code = ogeScriptExecuteBody.getCode();
         if (!codeCheck(code)) {
             JSONObject ansObj = new JSONObject();
@@ -230,12 +244,43 @@ public class JsonReceiverController {
                 dagsObj.put(dagArray.getJSONObject(i).getString("layerName"), dagId);
             }
             redisUtil.saveKeyValue(dagId, dagArray.getJSONObject(i).toJSONString(), 3600 * 2);
-            log.info("缓存dagId：{}",dagId);
+            log.info("缓存dagId：{}", dagId);
         }
         resultObj.put("spaceParams", spaceParamsObj);
         resultObj.put("dags", dagsObj);
         resultObj.put("log", ogeScriptExecuteResponse.getLog());
         return resultObj;
+    }
+
+    /**
+     * 示例代码埋点，统计次数
+     *
+     * @param ogeScriptExecuteBody
+     */
+    public void samplePoint(OGEScriptExecuteBody ogeScriptExecuteBody) {
+        List<String> resourceInfos = redisUtil.getListByKey(OGE_FLOWSTATISTICS_KEYWORD_SAMPLECODE, 0, -1);
+        //有无缓存记录
+        boolean flag = false;
+        String sampleName = ogeScriptExecuteBody.getSampleName();
+        if (StringUtils.isNotEmpty(sampleName)) {
+            for (int i = 0; i < resourceInfos.size(); i++) {
+                ResourceInfo info = JSONObject.parseObject(resourceInfos.get(i), ResourceInfo.class);
+                //有缓存，次数+1
+                if (sampleName.equals(info.getLabel())) {
+                    flag = true;
+                    info.setCount(info.getCount() + 1);
+                    resourceInfos.set(i, JSONObject.toJSONString(info));
+                    break;
+                }
+            }
+            //无缓存，作新增
+            if (!flag) {
+                ResourceInfo newInfo = new ResourceInfo(sampleName, 1);
+                resourceInfos.add(JSONObject.toJSONString(newInfo));
+            }
+            redisUtil.deleteKey(OGE_FLOWSTATISTICS_KEYWORD_SAMPLECODE);
+            redisUtil.saveKeyList(OGE_FLOWSTATISTICS_KEYWORD_SAMPLECODE, resourceInfos);
+        }
     }
 
     protected boolean codeCheck(String code) {
@@ -303,7 +348,7 @@ public class JsonReceiverController {
         }
 
         String apiCountStr = redisUtil.getValueByKey("api:count");
-        if(StringUtils.isNotEmpty(apiCountStr)){
+        if (StringUtils.isNotEmpty(apiCountStr)) {
             redisUtil.saveKeyValue("api:count", String.valueOf(
                     Integer.parseInt(apiCountStr) + 1
             ));
@@ -320,7 +365,7 @@ public class JsonReceiverController {
         ans.put("totalSpace", 698.1027158917859);
         ans.put("onlineData", 36.69250350394577);
         String apiCountStr = redisUtil.getValueByKey("api:count");
-        if(StringUtils.isNotEmpty(apiCountStr)){
+        if (StringUtils.isNotEmpty(apiCountStr)) {
             ans.put("apiCount", Integer.parseInt(apiCountStr));
         }
 
