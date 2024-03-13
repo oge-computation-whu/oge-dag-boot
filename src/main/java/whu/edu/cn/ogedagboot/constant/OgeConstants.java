@@ -39,6 +39,8 @@ public class OgeConstants {
     public static final Integer RESOURCE_TYPE_DATA = 0;
     //资源类型-模型
     public static final Integer RESOURCE_TYPE_MODEL = 1;
+    //资源类型-示例代码
+    public static final Integer RESOURCE_TYPE_SAMPLE= 2;
 
     //未登录
     public static final Boolean UNLOGGED = false;

@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static whu.edu.cn.ogedagboot.constant.OgeConstants.OGE_FLOWSTATISTICS_KEYWORD_SAMPLECODE;
+import static whu.edu.cn.ogedagboot.constant.OgeConstants.RESOURCE_TYPE_SAMPLE;
 import static whu.edu.cn.ogedagboot.util.LivyUtil.deleteBatchSession;
 import static whu.edu.cn.ogedagboot.util.LivyUtil.livyTrigger;
 import static whu.edu.cn.ogedagboot.util.SSHClientUtil.runCmd;
@@ -275,7 +276,7 @@ public class JsonReceiverController {
             }
             //无缓存，作新增
             if (!flag) {
-                ResourceInfo newInfo = new ResourceInfo(sampleName, 1);
+                ResourceInfo newInfo = new ResourceInfo(sampleName, 1, RESOURCE_TYPE_SAMPLE);
                 resourceInfos.add(JSONObject.toJSONString(newInfo));
             }
             redisUtil.deleteKey(OGE_FLOWSTATISTICS_KEYWORD_SAMPLECODE);

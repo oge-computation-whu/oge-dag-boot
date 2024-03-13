@@ -21,4 +21,6 @@ public class ResourceInfo {
      * 次数
      */
     private Integer count;
+
+    private Integer type;
 }
